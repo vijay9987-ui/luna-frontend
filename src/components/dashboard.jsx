@@ -13,9 +13,9 @@ const Dashboard = () => {
 
 
     const images = [
-        "src/assets/Dashboard1.jpg",
-        "src/assets/Dashboard2.jpg",
-        "src/assets/Dashboard3.jpg",
+        "src\components\asset\Dashboard1.jpg",
+        "src\components\asset\Dashboard2.jpg",
+        "src\components\asset\Dashboard3.jpg",
     ];
 
     const [categories, setCategories] = useState([]);
