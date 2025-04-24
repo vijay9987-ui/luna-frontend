@@ -331,6 +331,35 @@ const Profile = () => {
         }
     };
 
+    const [orders, setOrders] = useState([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    const [ordersError, setOrdersError] = useState(null);
+
+
+    const fetchOrders = async () => {
+        try {
+            setOrdersLoading(true);
+            setOrdersError(null);
+            const response = await axios.get(
+                `https://luna-backend-1.onrender.com/api/users/myorders/${userId}`
+            );
+            setOrders(response.data.orders || []);
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            setOrdersError(error.response?.data?.message || "Failed to load orders");
+        } finally {
+            setOrdersLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (userId && step === 1) {
+            fetchOrders();
+        }
+        if (userId && step === 5) {
+            fetchCartData();
+        }
+    }, [userId, step]);
 
     return (
         <>
@@ -395,7 +424,100 @@ const Profile = () => {
 
                     {/* Main Content */}
                     <div className="col-sm-8 p-5 border border-2">
-                        {step === 1 && <h3>Here is my Orders</h3>}
+                        {step === 1 && (
+                            <div className="container my-4">
+                                <h3 className="mb-4 text-center text-md-start">My Orders</h3>
+
+                                {ordersLoading ? (
+                                    <div className="text-center py-4">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p className="mt-2">Loading your orders...</p>
+                                    </div>
+                                ) : ordersError ? (
+                                    <div className="alert alert-danger">{ordersError}</div>
+                                ) : orders.length === 0 ? (
+                                    <div className="text-center py-4">
+                                        <p>You haven't placed any orders yet.</p>
+                                        <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+                                            Start Shopping
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="table-responsive">
+                                        <table className="table table-hover align-middle">
+                                            <thead className="table-dark">
+                                                <tr>
+                                                    <th scope="col">Order</th>
+                                                    <th scope="col">Items</th>
+                                                    <th scope="col">Total</th>
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {orders.map(order => (
+                                                    <tr key={order._id}>
+                                                        <td>
+                                                            <div className="text-break">
+                                                                <strong>ID:</strong> {order._id}
+                                                                <br />
+                                                                <small>{new Date(order.createdAt).toLocaleDateString()}</small>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <div className="d-flex flex-column gap-2">
+                                                                {order.products.map(product => (
+                                                                    <div key={product.productId._id} className="d-flex align-items-center gap-2">
+                                                                        <img
+                                                                            src={product.productId.images?.[0] || "/fallback.png"}
+                                                                            alt={product.productId.name}
+                                                                            className="rounded"
+                                                                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                                                        />
+                                                                        <div className="text-break">
+                                                                            <small>{product.productId.name}</small>
+                                                                            <br />
+                                                                            <small>Qty: {product.quantity}</small>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+
+                                                        <td>₹{order.totalAmount.toFixed(2)}</td>
+
+                                                        <td>
+                                                            <span
+                                                                className={`badge ${order.status === 'Delivered'
+                                                                        ? 'bg-success'
+                                                                        : order.status === 'Cancelled'
+                                                                            ? 'bg-danger'
+                                                                            : order.status === 'Processing'
+                                                                                ? 'bg-warning text-dark'
+                                                                                : 'bg-info'
+                                                                    }`}
+                                                            >
+                                                                {order.status}
+                                                            </span>
+                                                        </td>
+
+                                                        <td>
+                                                            <button className="btn btn-sm btn-outline-primary w-100">
+                                                                View Details
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
 
                         {step === 2 && (
                             <form className="p-4 border rounded shadow-sm bg-light">

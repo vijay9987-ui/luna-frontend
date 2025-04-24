@@ -24,7 +24,7 @@ const Dashboard = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [cart, setCart] = useState([]);
     const [wishlist, setWishlist] = useState([]);
-    
+
     const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
     const userId = storedUser.userId;
 
@@ -62,9 +62,9 @@ const Dashboard = () => {
             });
             const data = await res.json();
 
-            setWishlist(prev => 
-                data.isInWishlist 
-                    ? [...prev, productId] 
+            setWishlist(prev =>
+                data.isInWishlist
+                    ? [...prev, productId]
                     : prev.filter(id => id !== productId)
             );
         } catch (error) {
@@ -73,14 +73,20 @@ const Dashboard = () => {
     };
 
     // Fetch products
+    // Fetch products
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/getproducts");
-                const products = response.data;
-                setNewArrivalsProducts(products.slice(0, 4));
-                setRecentlyViewedProducts(products.slice(5, 10));
-                setMostWantedProducts(products.slice(11, 15));
+                // Fetch all products in parallel
+                const [newArrivalsResponse, bestSellersResponse, productsResponse] = await Promise.all([
+                    axios.get("https://luna-backend-1.onrender.com/api/products/new-arrivals"),
+                    axios.get("https://luna-backend-1.onrender.com/api/products/best-sellers"),
+                    axios.get("https://luna-backend-1.onrender.com/api/products/getproducts")
+                ]);
+
+                setNewArrivalsProducts(newArrivalsResponse.data);
+                setMostWantedProducts(bestSellersResponse.data); // Now using actual best sellers
+                setRecentlyViewedProducts(productsResponse.data.slice(5, 10));
             } catch (error) {
                 console.error("Error fetching products:", error);
             }
@@ -135,10 +141,10 @@ const Dashboard = () => {
     // Add to cart handler
     const addToCart = () => {
         if (selectedItem) {
-            const newItem = { 
-                ...selectedItem, 
-                quantity, 
-                total: selectedItem.price * quantity 
+            const newItem = {
+                ...selectedItem,
+                quantity,
+                total: selectedItem.price * quantity
             };
             const updatedCart = [...cart, newItem];
             setCart(updatedCart);
@@ -149,7 +155,7 @@ const Dashboard = () => {
     // Render product card component
     const renderProductCard = (product) => {
         const isInWishlist = wishlist.includes(product._id);
-        
+
         return (
             <div
                 key={product._id}
@@ -193,7 +199,7 @@ const Dashboard = () => {
                         <i
                             className={`fa-heart fa-2xl ${isInWishlist ? "fa-solid" : "fa-regular"}`}
                             style={{
-                                color: isInWishlist ? "#ff0000" : "#ffffff",
+                                color: isInWishlist ? "#ff0000" : "#000000",
                                 fontSize: "1.8rem"
                             }}
                         ></i>
@@ -225,7 +231,7 @@ const Dashboard = () => {
                         className="card-img img-fluid"
                         alt="Latest Fashion"
                     />
-                    <div 
+                    <div
                         className="card-img-overlay d-flex flex-column justify-content-center align-items-center text-center"
                         style={{
                             backdropFilter: "blur(8px)",

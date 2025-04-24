@@ -10,6 +10,9 @@ const MyCart = () => {
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [error, setError] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [selectedItems, setSelectedItems] = useState([]); // Track selected items
+    const [selectAll, setSelectAll] = useState(false);
 
     const [address, setAddress] = useState({
         name: "",
@@ -58,6 +61,10 @@ const MyCart = () => {
                 loading: false,
                 error: null
             });
+
+            // Reset selected items when cart data changes
+            setSelectedItems([]);
+            setSelectAll(false);
         } catch (error) {
             console.error("Error fetching cart:", error);
             setCartData(prev => ({
@@ -87,6 +94,28 @@ const MyCart = () => {
         fetchCart();
         fetchAddresses();
     }, [fetchCart, fetchAddresses]);
+
+    // Handle individual item selection
+    const handleSelectItem = (productId) => {
+        setSelectedItems(prev => {
+            if (prev.includes(productId)) {
+                return prev.filter(id => id !== productId);
+            } else {
+                return [...prev, productId];
+            }
+        });
+    };
+
+    // Handle select all items
+    const handleSelectAll = () => {
+        if (selectAll) {
+            setSelectedItems([]);
+        } else {
+            const allIds = cartData.cartItems.map(item => item.product._id);
+            setSelectedItems(allIds);
+        }
+        setSelectAll(!selectAll);
+    };
 
     // Handle quantity change
     const updateQuantity = async (productId, action) => {
@@ -131,7 +160,42 @@ const MyCart = () => {
         }
     };
 
+    // Handle removal of multiple items
+    const removeSelectedItems = async () => {
+        if (selectedItems.length === 0) {
+            setError("Please select items to remove");
+            return;
+        }
+
+        try {
+            const userId = getUserId();
+            if (!userId) return;
+
+            setCartData(prev => ({ ...prev, loading: true }));
+
+            // Remove each selected item
+            for (const productId of selectedItems) {
+                await axios.delete(
+                    `https://luna-backend-1.onrender.com/api/users/removefromcart/${userId}/${productId}`
+                );
+            }
+
+            await fetchCart(); // Refresh cart data
+            setSelectedItems([]);
+            setSelectAll(false);
+        } catch (error) {
+            console.error("Error removing items:", error);
+            setCartData(prev => ({
+                ...prev,
+                loading: false,
+                error: error.response?.data?.message || "Failed to remove items"
+            }));
+        }
+    };
+
     const handleCheckout = async () => {
+        setError(null);
+
         if (cartData.cartItems.length === 0) {
             setError("Your cart is empty");
             return;
@@ -144,35 +208,94 @@ const MyCart = () => {
 
         try {
             const userId = getUserId();
-            if (!userId) return;
+            if (!userId) {
+                setError("Please login to proceed with checkout");
+                return;
+            }
 
-            const orderData = {
-                userId,
-                items: cartData.cartItems.map(item => ({
-                    productId: item.product._id,
-                    quantity: item.quantity,
-                    size: item.size,
-                    color: item.color,
-                    price: item.product.price
-                })),
-                shippingAddress: selectedAddress,
-                totalAmount: cartData.finalAmount
+            // Filter cart items based on selected items (if any are selected)
+            const itemsToCheckout = selectedItems.length > 0
+                ? cartData.cartItems.filter(item => selectedItems.includes(item.product._id))
+                : cartData.cartItems;
+
+            // Construct products array for order
+            const products = itemsToCheckout.map(item => ({
+                productId: item.product._id,
+                quantity: item.quantity,
+                price: item.product.price,
+                color: item.color || "default",
+                size: item.size || "default",
+            }));
+
+            // Calculate total amount
+            const totalAmount = products.reduce(
+                (total, item) => total + (item.quantity * item.price),
+                0
+            );
+
+            const checkoutData = {
+                products,
+                shippingAddress: {
+                    fullName: selectedAddress.name,
+                    addressLine: `${selectedAddress.addressline1 || ""} ${selectedAddress.addressline2 || ""}`.trim(),
+                    city: selectedAddress.city,
+                    state: selectedAddress.state,
+                    zipCode: selectedAddress.pincode,
+                    country: selectedAddress.country,
+                    phone: selectedAddress.mobile
+                },
+                paymentMethod: paymentMethod || "COD",
+                totalAmount,
+                deliveryCharge: cartData.deliveryCharge,
             };
 
-            const response = await axios.post(`https://luna-backend-1.onrender.com/api/orders/create/${userId}`, orderData);
+            setCartData(prev => ({ ...prev, loading: true }));
 
-            // Clear cart after successful checkout
-            await axios.delete(`https://luna-backend-1.onrender.com/api/users/clearcart/${userId}`);
-            await fetchCart();
+            console.log("OrderData : ", { userId, checkoutData });
 
-            // Redirect to order confirmation or show success message
-            navigate(`/order-confirmation/${response.data.orderId}`);
+            const response = await axios.post(
+                `https://luna-backend-1.onrender.com/api/users/create-order/${userId}`,
+                checkoutData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
 
+            console.log(response);
+
+            if (!response.data) {
+                throw new Error("No data received from server");
+            }
+
+            if (response.data.order) {
+                await fetchCart(); // refresh cart
+                alert('Order Placed Successfully');
+                //navigate(`/order-confirmation/${response.data.order._id}`);
+            } else if (response.data.message) {
+                setError(response.data.message);
+            } else {
+                throw new Error("Invalid response format");
+            }
+
+            console.log("Order Data:", { userId, checkoutData });
         } catch (err) {
             console.error("Checkout failed:", err);
-            setError(err.response?.data?.message || "Checkout failed");
+
+            if (err.response) {
+                setError(err.response.data.message || `Checkout failed (${err.response.status})`);
+            } else if (err.request) {
+                setError("Server is not responding. Please try again later.");
+            } else {
+                setError("Checkout failed. Please try again.");
+            }
+        } finally {
+            setCartData(prev => ({ ...prev, loading: false }));
         }
     };
+
+
 
     // Handle address form changes
     const handleChangeAdd = (e) => {
@@ -222,6 +345,14 @@ const MyCart = () => {
         setSelectedAddress(addr);
     };
 
+    // Calculate selected items subtotal
+    const calculateSelectedSubtotal = () => {
+        return cartData.cartItems
+            .filter(item => selectedItems.includes(item.product._id))
+            .reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+            .toFixed(2);
+    };
+
     return (
         <>
             <Navbar />
@@ -254,6 +385,14 @@ const MyCart = () => {
                                         <table className="table table-bordered align-middle text-center">
                                             <thead className="table-dark">
                                                 <tr>
+                                                    <th>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectAll}
+                                                            onChange={handleSelectAll}
+                                                            disabled={cartData.loading}
+                                                        />
+                                                    </th>
                                                     <th>Image</th>
                                                     <th>Product</th>
                                                     <th>Quantity</th>
@@ -264,6 +403,16 @@ const MyCart = () => {
                                             <tbody>
                                                 {cartData.cartItems.map((item) => (
                                                     <tr key={item.product._id}>
+                                                        {/* Checkbox for selection */}
+                                                        <td>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedItems.includes(item.product._id)}
+                                                                onChange={() => handleSelectItem(item.product._id)}
+                                                                disabled={cartData.loading}
+                                                            />
+                                                        </td>
+
                                                         {/* Product Image */}
                                                         <td>
                                                             <img
@@ -327,12 +476,33 @@ const MyCart = () => {
                                                 ))}
                                             </tbody>
                                         </table>
+
+                                        {/* Bulk actions */}
+                                        {selectedItems.length > 0 && (
+                                            <div className="mt-3 d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span className="me-3">
+                                                        {selectedItems.length} item(s) selected
+                                                    </span>
+                                                    <button
+                                                        className="btn btn-outline-danger"
+                                                        onClick={removeSelectedItems}
+                                                        disabled={cartData.loading}
+                                                    >
+                                                        Remove Selected
+                                                    </button>
+                                                </div>
+                                                <div className="fw-bold">
+                                                    Selected Subtotal: ₹{calculateSelectedSubtotal()}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
+                        {/* Rest of your existing code (address selection, payment, order summary) */}
                         <div className='container'>
                             <div className='row'>
                                 <div className="col-sm-6 border border-0">
@@ -400,29 +570,80 @@ const MyCart = () => {
                                         </div>
                                     </div>
                                 </div>
-                                            
+
                                 <div className="col-sm-6 border border-0">
+                                    <div className="card mb-3">
+                                        <div className="card-header bg-dark text-white">
+                                            <h5 className="mb-0">Payment Method</h5>
+                                        </div>
+                                        <div className="card-body">
+                                            <div className="mb-3">
+                                                <select
+                                                    className="form-select"
+                                                    value={paymentMethod}
+                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                >
+                                                    <option value="COD">Cash on Delivery (COD)</option>
+                                                    <option value="Online">Online Payment (Credit/Debit Card, UPI, etc.)</option>
+                                                </select>
+                                            </div>
+                                            {paymentMethod === 'Online' && (
+                                                <div className="alert alert-info mt-3">
+                                                    You will be redirected to a secure payment gateway after placing your order.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Order Summary Card */}
                                     <div className="card">
                                         <div className="card-body">
                                             <h5 className="card-title">Order Summary</h5>
                                             <hr />
+
+                                            {/* Subtotal - Show either selected items or all items */}
                                             <div className="d-flex justify-content-between mb-2">
-                                                <span>Subtotal ({cartData.totalItems} items)</span>
-                                                <span>₹{cartData.subTotal.toFixed(2)}</span>
+                                                <span>
+                                                    Subtotal
+                                                    {selectedItems.length > 0 ? (
+                                                        <span className="text-muted"> ({selectedItems.length} selected items)</span>
+                                                    ) : (
+                                                        <span className="text-muted"> ({cartData.totalItems} items)</span>
+                                                    )}
+                                                </span>
+                                                <span>
+                                                    ₹{selectedItems.length > 0 ?
+                                                        calculateSelectedSubtotal() :
+                                                        cartData.subTotal.toFixed(2)}
+                                                </span>
                                             </div>
+
+                                            {/* Delivery Charge */}
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span>Delivery Charge</span>
                                                 <span>₹{cartData.deliveryCharge.toFixed(2)}</span>
                                             </div>
+
                                             <hr />
+
+                                            {/* Total Amount - Calculate based on selected items or all items */}
                                             <div className="d-flex justify-content-between fw-bold mb-4">
                                                 <span>Total Amount</span>
-                                                <span>₹{cartData.finalAmount.toFixed(2)}</span>
+                                                <span>
+                                                    ₹{(
+                                                        (selectedItems.length > 0 ?
+                                                            parseFloat(calculateSelectedSubtotal()) :
+                                                            cartData.subTotal) +
+                                                        cartData.deliveryCharge
+                                                    ).toFixed(2)}
+                                                </span>
                                             </div>
+
+                                            {/* Checkout Button */}
                                             <button
                                                 className="btn btn-outline-dark w-100"
                                                 onClick={handleCheckout}
-                                                disabled={cartData.loading}
+                                                disabled={cartData.loading || selectedItems.length < 0}
                                             >
                                                 {cartData.loading ? 'Processing...' : 'Proceed to Checkout'}
                                             </button>
@@ -430,167 +651,167 @@ const MyCart = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Address Form Modal */}
-                        {showAddressForm && (
-                            <div className="modal" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-                                <div className="modal-dialog modal-lg">
-                                    <div className="modal-content">
-                                        <div className="modal-header">
-                                            <h5 className="modal-title text-dark">Add New Address</h5>
-                                            <button
-                                                type="button"
-                                                className="btn-close"
-                                                onClick={() => setShowAddressForm(false)}
-                                            ></button>
-                                        </div>
-                                        <div className="modal-body">
-                                            <form className="row g-3 mt-4 text-dark" onSubmit={handleSaveAddress}>
-                                                <div className="col-md-6">
-                                                    <label className="form-label">Name*</label>
-                                                    <input
-                                                        type="text"
-                                                        name="name"
-                                                        className="form-control"
-                                                        value={address.name}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <label className="form-label">Mobile*</label>
-                                                    <input
-                                                        type="tel"
-                                                        name="mobile"
-                                                        className="form-control"
-                                                        value={address.mobile}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                        pattern="[0-9]{10}"
-                                                    />
-                                                </div>
-                                                <div className="col-md-12">
-                                                    <label className="form-label">Email*</label>
-                                                    <input
-                                                        type="email"
-                                                        name="email"
-                                                        className="form-control"
-                                                        value={address.email}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                    />
-                                                </div>
+                            {/* Address Form Modal */}
+                            {showAddressForm && (
+                                <div className="modal" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
+                                    <div className="modal-dialog modal-lg">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title text-dark">Add New Address</h5>
+                                                <button
+                                                    type="button"
+                                                    className="btn-close"
+                                                    onClick={() => setShowAddressForm(false)}
+                                                ></button>
+                                            </div>
+                                            <div className="modal-body">
+                                                <form className="row g-3 mt-4 text-dark" onSubmit={handleSaveAddress}>
+                                                    <div className="col-md-6">
+                                                        <label className="form-label">Name*</label>
+                                                        <input
+                                                            type="text"
+                                                            name="name"
+                                                            className="form-control"
+                                                            value={address.name}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <label className="form-label">Mobile*</label>
+                                                        <input
+                                                            type="tel"
+                                                            name="mobile"
+                                                            className="form-control"
+                                                            value={address.mobile}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                            pattern="[0-9]{10}"
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-12">
+                                                        <label className="form-label">Email*</label>
+                                                        <input
+                                                            type="email"
+                                                            name="email"
+                                                            className="form-control"
+                                                            value={address.email}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                        />
+                                                    </div>
 
-                                                <div className="col-md-12">
-                                                    <label className="form-label">Address Line 1*</label>
-                                                    <input
-                                                        type="text"
-                                                        name="addressline1"
-                                                        className="form-control"
-                                                        value={address.addressline1}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="col-md-12">
-                                                    <label className="form-label">Address Line 2</label>
-                                                    <input
-                                                        type="text"
-                                                        name="addressline2"
-                                                        className="form-control"
-                                                        value={address.addressline2}
-                                                        onChange={handleChangeAdd}
-                                                    />
-                                                </div>
+                                                    <div className="col-md-12">
+                                                        <label className="form-label">Address Line 1*</label>
+                                                        <input
+                                                            type="text"
+                                                            name="addressline1"
+                                                            className="form-control"
+                                                            value={address.addressline1}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-12">
+                                                        <label className="form-label">Address Line 2</label>
+                                                        <input
+                                                            type="text"
+                                                            name="addressline2"
+                                                            className="form-control"
+                                                            value={address.addressline2}
+                                                            onChange={handleChangeAdd}
+                                                        />
+                                                    </div>
 
-                                                <div className="col-md-4">
-                                                    <label className="form-label">City*</label>
-                                                    <input
-                                                        type="text"
-                                                        name="city"
-                                                        className="form-control"
-                                                        value={address.city}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="col-md-4">
-                                                    <label className="form-label">State*</label>
-                                                    <input
-                                                        type="text"
-                                                        name="state"
-                                                        className="form-control"
-                                                        value={address.state}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="col-md-4">
-                                                    <label className="form-label">Country*</label>
-                                                    <input
-                                                        type="text"
-                                                        name="country"
-                                                        className="form-control"
-                                                        value={address.country}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <label className="form-label">Pincode*</label>
-                                                    <input
-                                                        type="text"
-                                                        name="pincode"
-                                                        className="form-control"
-                                                        value={address.pincode}
-                                                        onChange={handleChangeAdd}
-                                                        required
-                                                        pattern="[0-9]{6}"
-                                                    />
-                                                </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label">City*</label>
+                                                        <input
+                                                            type="text"
+                                                            name="city"
+                                                            className="form-control"
+                                                            value={address.city}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label">State*</label>
+                                                        <input
+                                                            type="text"
+                                                            name="state"
+                                                            className="form-control"
+                                                            value={address.state}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label">Country*</label>
+                                                        <input
+                                                            type="text"
+                                                            name="country"
+                                                            className="form-control"
+                                                            value={address.country}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <label className="form-label">Pincode*</label>
+                                                        <input
+                                                            type="text"
+                                                            name="pincode"
+                                                            className="form-control"
+                                                            value={address.pincode}
+                                                            onChange={handleChangeAdd}
+                                                            required
+                                                            pattern="[0-9]{6}"
+                                                        />
+                                                    </div>
 
-                                                <div className="col-12">
-                                                    <label className="form-label me-2">Address Type:</label>
-                                                    {["Home", "Office", "Other"].map((type) => (
-                                                        <div key={type} className="form-check form-check-inline">
-                                                            <input
-                                                                className="form-check-input"
-                                                                type="radio"
-                                                                name="type"
-                                                                value={type}
-                                                                checked={address.type === type}
-                                                                onChange={handleChangeAdd}
-                                                                id={`type-${type}`}
-                                                            />
-                                                            <label className="form-check-label" htmlFor={`type-${type}`}>
-                                                                {type}
-                                                            </label>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                    <div className="col-12">
+                                                        <label className="form-label me-2">Address Type:</label>
+                                                        {["Home", "Office", "Other"].map((type) => (
+                                                            <div key={type} className="form-check form-check-inline">
+                                                                <input
+                                                                    className="form-check-input"
+                                                                    type="radio"
+                                                                    name="type"
+                                                                    value={type}
+                                                                    checked={address.type === type}
+                                                                    onChange={handleChangeAdd}
+                                                                    id={`type-${type}`}
+                                                                />
+                                                                <label className="form-check-label" htmlFor={`type-${type}`}>
+                                                                    {type}
+                                                                </label>
+                                                            </div>
+                                                        ))}
+                                                    </div>
 
-                                                <div className="col-12 text-center mt-3">
-                                                    <button type="submit" className="btn btn-success me-2">
-                                                        Save Address
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => setShowAddressForm(false)}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
+                                                    <div className="col-12 text-center mt-3">
+                                                        <button type="submit" className="btn btn-success me-2">
+                                                            Save Address
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            onClick={() => setShowAddressForm(false)}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </>
                 )}
-            </div >
+            </div>
             <Footer />
         </>
     );
