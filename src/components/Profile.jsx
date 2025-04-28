@@ -544,8 +544,8 @@ const Profile = () => {
                                             <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                                         </div>
                                         <div className="modal-body">
-                                            <p className="text-dark"><strong>Order ID:</strong> {selectedOrder._id}</p>
-                                            <p className="text-dark"><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                                            <p className="text-dark "><strong>Order ID:</strong> {selectedOrder._id}</p>
+                                            <p className="text-dark "><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
 
                                             <h6 className="mt-4 mb-2">Products:</h6>
                                             <ul className="list-group">
