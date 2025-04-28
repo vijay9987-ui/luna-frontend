@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Footer from "../views/Footer";
 import Navbar from "../views/Navbar";
 import axios from "axios";
@@ -336,6 +336,25 @@ const Profile = () => {
     const [ordersError, setOrdersError] = useState(null);
 
 
+
+    // inside your component:
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showOrderModal, setShowOrderModal] = useState(false);
+
+    // handler to open modal
+    const handleViewDetails = (order) => {
+        setSelectedOrder(order);
+        setShowOrderModal(true);
+    };
+
+    // handler to close modal
+    const handleCloseModal = () => {
+        setSelectedOrder(null);
+        setShowOrderModal(false);
+    };
+
+
+
     const fetchOrders = async () => {
         try {
             setOrdersLoading(true);
@@ -385,14 +404,7 @@ const Profile = () => {
                                     <i className="fa-solid fa-truck me-2"></i>
                                     <a className="btn" onClick={() => setStep(1)} data-bs-toggle="collapse" href="#collapseorders">My orders</a>
                                 </p>
-                                <div className="collapse" id="collapseorders">
-                                    <ul className="rounded">
-                                        <li className="list-group-item">On the Way</li>
-                                        <li className="list-group-item">Delivered</li>
-                                        <li className="list-group-item">Cancelled</li>
-                                        <li className="list-group-item">Returned</li>
-                                    </ul>
-                                </div>
+                                
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-cart-shopping me-2"></i>
                                     <a
@@ -492,12 +504,12 @@ const Profile = () => {
                                                         <td>
                                                             <span
                                                                 className={`badge ${order.status === 'Delivered'
-                                                                        ? 'bg-success'
-                                                                        : order.status === 'Cancelled'
-                                                                            ? 'bg-danger'
-                                                                            : order.status === 'Processing'
-                                                                                ? 'bg-warning text-dark'
-                                                                                : 'bg-info'
+                                                                    ? 'bg-success'
+                                                                    : order.status === 'Cancelled'
+                                                                        ? 'bg-danger'
+                                                                        : order.status === 'Processing'
+                                                                            ? 'bg-warning text-dark'
+                                                                            : 'bg-info'
                                                                     }`}
                                                             >
                                                                 {order.status}
@@ -505,9 +517,13 @@ const Profile = () => {
                                                         </td>
 
                                                         <td>
-                                                            <button className="btn btn-sm btn-outline-primary w-100">
+                                                            <button
+                                                                className="btn btn-sm btn-outline-primary w-100"
+                                                                onClick={() => handleViewDetails(order)}
+                                                            >
                                                                 View Details
                                                             </button>
+
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -517,6 +533,73 @@ const Profile = () => {
                                 )}
                             </div>
                         )}
+
+
+                        {showOrderModal && selectedOrder && (
+                            <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+                                <div className="modal-dialog modal-lg modal-dialog-centered">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Order Details</h5>
+                                            <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <p className="text-dark"><strong>Order ID:</strong> {selectedOrder._id}</p>
+                                            <p className="text-dark"><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+
+                                            <h6 className="mt-4 mb-2">Products:</h6>
+                                            <ul className="list-group">
+                                                {selectedOrder.products.map(product => (
+                                                    <li key={product.productId._id} className="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div className="d-flex align-items-center">
+                                                            <img
+                                                                src={product.productId.images?.[0] || "/fallback.png"}
+                                                                alt={product.productId.name}
+                                                                style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                                                                className="rounded me-2"
+                                                            />
+                                                            <div>
+                                                                <div><strong>{product.productId.name}</strong></div>
+                                                                <div className="small text-muted">Qty: {product.quantity}</div>
+                                                            </div>
+                                                        </div>
+                                                        <span>₹{product.price?.toFixed(2) || "N/A"}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+
+                                            <h6 className="mt-4 mb-2">Summary:</h6>
+                                            <ul className="list-group">
+                                                <li className="list-group-item d-flex justify-content-between">
+                                                    <span>Subtotal</span>
+                                                    <span>₹{selectedOrder.totalAmount.toFixed(2)}</span>
+                                                </li>
+                                                <li className="list-group-item d-flex justify-content-between">
+                                                    <span>Status</span>
+                                                    <span className={`badge ${selectedOrder.status === 'Delivered'
+                                                        ? 'bg-success'
+                                                        : selectedOrder.status === 'Cancelled'
+                                                            ? 'bg-danger'
+                                                            : selectedOrder.status === 'Processing'
+                                                                ? 'bg-warning text-dark'
+                                                                : 'bg-info'
+                                                        }`}>
+                                                        {selectedOrder.status}
+                                                    </span>
+                                                </li>
+                                            </ul>
+
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
 
 
                         {step === 2 && (
