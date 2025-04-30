@@ -11,7 +11,7 @@ const MyCart = () => {
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [error, setError] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('COD');
-    const [selectedItems, setSelectedItems] = useState([]); // Track selected items
+    const [selectedItems, setSelectedItems] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
 
     const [address, setAddress] = useState({
@@ -62,7 +62,6 @@ const MyCart = () => {
                 error: null
             });
 
-            // Reset selected items when cart data changes
             setSelectedItems([]);
             setSelectAll(false);
         } catch (error) {
@@ -128,7 +127,7 @@ const MyCart = () => {
                 `https://luna-backend-1.onrender.com/api/users/addtocart/${userId}`,
                 { productId, action }
             );
-            await fetchCart(); // Refresh cart data
+            await fetchCart();
         } catch (error) {
             console.error("Error updating quantity:", error);
             setCartData(prev => ({
@@ -149,7 +148,7 @@ const MyCart = () => {
             await axios.delete(
                 `https://luna-backend-1.onrender.com/api/users/removefromcart/${userId}/${productId}`
             );
-            await fetchCart(); // Refresh cart data
+            await fetchCart();
         } catch (error) {
             console.error("Error removing item:", error);
             setCartData(prev => ({
@@ -173,14 +172,13 @@ const MyCart = () => {
 
             setCartData(prev => ({ ...prev, loading: true }));
 
-            // Remove each selected item
             for (const productId of selectedItems) {
                 await axios.delete(
                     `https://luna-backend-1.onrender.com/api/users/removefromcart/${userId}/${productId}`
                 );
             }
 
-            await fetchCart(); // Refresh cart data
+            await fetchCart();
             setSelectedItems([]);
             setSelectAll(false);
         } catch (error) {
@@ -213,12 +211,10 @@ const MyCart = () => {
                 return;
             }
 
-            // Filter cart items based on selected items (if any are selected)
             const itemsToCheckout = selectedItems.length > 0
                 ? cartData.cartItems.filter(item => selectedItems.includes(item.product._id))
                 : cartData.cartItems;
 
-            // Construct products array for order
             const products = itemsToCheckout.map(item => ({
                 productId: item.product._id,
                 quantity: item.quantity,
@@ -227,7 +223,6 @@ const MyCart = () => {
                 size: item.size || "default",
             }));
 
-            // Calculate total amount
             const totalAmount = products.reduce(
                 (total, item) => total + (item.quantity * item.price),
                 0
@@ -251,8 +246,6 @@ const MyCart = () => {
 
             setCartData(prev => ({ ...prev, loading: true }));
 
-            console.log("OrderData : ", { userId, checkoutData });
-
             const response = await axios.post(
                 `https://luna-backend-1.onrender.com/api/users/create-order/${userId}`,
                 checkoutData,
@@ -263,23 +256,18 @@ const MyCart = () => {
                 }
             );
 
-            console.log(response);
-
             if (!response.data) {
                 throw new Error("No data received from server");
             }
 
             if (response.data.order) {
-                await fetchCart(); // refresh cart
+                await fetchCart();
                 alert('Order Placed Successfully');
-                //navigate(`/order-confirmation/${response.data.order._id}`);
             } else if (response.data.message) {
                 setError(response.data.message);
             } else {
                 throw new Error("Invalid response format");
             }
-
-            console.log("Order Data:", { userId, checkoutData });
         } catch (err) {
             console.error("Checkout failed:", err);
 
@@ -294,8 +282,6 @@ const MyCart = () => {
             setCartData(prev => ({ ...prev, loading: false }));
         }
     };
-
-
 
     // Handle address form changes
     const handleChangeAdd = (e) => {
@@ -356,14 +342,18 @@ const MyCart = () => {
     return (
         <>
             <Navbar />
-            <div className="container my-5">
+            <div className="container my-5" style={{ background: "transparent", color: "white" }}>
                 <h2 className="mb-4">My Cart ({cartData.totalItems} items)</h2>
 
                 {cartData.error && (
-                    <div className="alert alert-danger">{cartData.error}</div>
+                    <div className="alert alert-danger" style={{ background: "rgba(220, 53, 69, 0.2)", color: "white", borderColor: "rgba(220, 53, 69, 0.5)" }}>
+                        {cartData.error}
+                    </div>
                 )}
                 {error && (
-                    <div className="alert alert-danger">{error}</div>
+                    <div className="alert alert-danger" style={{ background: "rgba(220, 53, 69, 0.2)", color: "white", borderColor: "rgba(220, 53, 69, 0.5)" }}>
+                        {error}
+                    </div>
                 )}
 
                 {cartData.cartItems.length === 0 ? (
@@ -372,6 +362,7 @@ const MyCart = () => {
                         <button
                             className="btn btn-primary mt-3"
                             onClick={() => navigate('/dashboard')}
+                            style={{ background: "rgba(13, 110, 253, 0.2)", color: "white", borderColor: "rgba(13, 110, 253, 0.5)" }}
                         >
                             Continue Shopping
                         </button>
@@ -380,10 +371,10 @@ const MyCart = () => {
                     <>
                         <div className="row">
                             <div className="col-md-12">
-                                <div className="card mb-4 border-dark">
+                                <div className="card mb-4" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
                                     <div className="card-body table-responsive">
-                                        <table className="table table-bordered align-middle text-center">
-                                            <thead className="table-dark">
+                                        <table className="table table-bordered align-middle text-center" style={{ color: "white" }}>
+                                            <thead style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)" }}>
                                                 <tr>
                                                     <th>
                                                         <input
@@ -391,6 +382,7 @@ const MyCart = () => {
                                                             checked={selectAll}
                                                             onChange={handleSelectAll}
                                                             disabled={cartData.loading}
+                                                            style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                         />
                                                     </th>
                                                     <th>Image</th>
@@ -402,31 +394,29 @@ const MyCart = () => {
                                             </thead>
                                             <tbody>
                                                 {cartData.cartItems.map((item) => (
-                                                    <tr key={item.product._id}>
-                                                        {/* Checkbox for selection */}
-                                                        <td>
+                                                    <tr key={item.product._id} style={{ borderColor: "rgba(255, 255, 255, 0.1)", background: "transparent", color: "white" }}>
+                                                        <td style={{background: "transparent", color: "white"}}>
                                                             <input
                                                                 type="checkbox"
                                                                 checked={selectedItems.includes(item.product._id)}
                                                                 onChange={() => handleSelectItem(item.product._id)}
                                                                 disabled={cartData.loading}
+                                                                style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                             />
                                                         </td>
 
-                                                        {/* Product Image */}
-                                                        <td>
+                                                        <td style={{background: "transparent", color: "white"}}>
                                                             <img
                                                                 src={item.product.images?.[0] || "/fallback.png"}
                                                                 alt={item.product.name}
                                                                 className="img-fluid rounded border"
-                                                                style={{ maxHeight: "80px" }}
+                                                                style={{ maxHeight: "80px", borderColor: "rgba(255, 255, 255, 0.2)" }}
                                                             />
                                                         </td>
 
-                                                        {/* Product Details */}
-                                                        <td className="text-start">
-                                                            <h6 className="text-dark mb-1">{item.product.name}</h6>
-                                                            <small className="text-secondary">
+                                                        <td className="text-start" style={{background: "transparent", color: "white"}}>
+                                                            <h6 className="mb-1">{item.product.name}</h6>
+                                                            <small style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                                                                 {item.color && `Color: ${item.color}`}
                                                                 {item.size && ` | Size: ${item.size}`}
                                                             </small>
@@ -435,39 +425,39 @@ const MyCart = () => {
                                                             </div>
                                                         </td>
 
-                                                        {/* Quantity Controls */}
-                                                        <td>
+                                                        <td style={{background: "transparent", color: "white"}}>
                                                             <div className="d-flex justify-content-center align-items-center">
                                                                 <button
-                                                                    className="btn btn-outline-dark btn-sm border-dark"
+                                                                    className="btn btn-sm"
                                                                     onClick={() => updateQuantity(item.product._id, "decrement")}
                                                                     disabled={cartData.loading}
+                                                                    style={{ background: "transparent", color: "white", borderColor: "rgba(255, 255, 255, 0.5)" }}
                                                                 >
                                                                     -
                                                                 </button>
                                                                 <span className="mx-3">{item.quantity}</span>
                                                                 <button
-                                                                    className="btn btn-outline-dark btn-sm border-dark"
+                                                                    className="btn btn-sm"
                                                                     onClick={() => updateQuantity(item.product._id, "increment")}
                                                                     disabled={cartData.loading}
+                                                                    style={{ background: "transparent", color: "white", borderColor: "rgba(255, 255, 255, 0.5)" }}
                                                                 >
                                                                     +
                                                                 </button>
                                                             </div>
                                                         </td>
 
-                                                        {/* Subtotal */}
-                                                        <td className="fw-semibold text-dark">
+                                                        <td className="fw-semibold" style={{background: "transparent", color: "white"}}>
                                                             ₹{(item.product.price * item.quantity).toFixed(2)}
                                                         </td>
 
-                                                        {/* Remove Button */}
-                                                        <td>
+                                                        <td style={{background: "transparent", color: "white"}}>
                                                             <button
-                                                                className="btn btn-sm btn-outline-danger border-danger"
+                                                                className="btn btn-outline-danger btn-sm"
                                                                 onClick={() => removeItem(item.product._id)}
                                                                 disabled={cartData.loading}
                                                                 title="Remove Item"
+                                                                // {style={{ background: "transparent", color: "#dc3545", borderColor: "rgba(220, 53, 69, 0.5)" }}}
                                                             >
                                                                 <i className="fa-solid fa-trash"></i>
                                                             </button>
@@ -477,7 +467,6 @@ const MyCart = () => {
                                             </tbody>
                                         </table>
 
-                                        {/* Bulk actions */}
                                         {selectedItems.length > 0 && (
                                             <div className="mt-3 d-flex justify-content-between align-items-center">
                                                 <div>
@@ -488,6 +477,7 @@ const MyCart = () => {
                                                         className="btn btn-outline-danger"
                                                         onClick={removeSelectedItems}
                                                         disabled={cartData.loading}
+                                                        // {style={{ background: "transparent", color: "#dc3545", borderColor: "rgba(220, 53, 69, 0.5)" }}}
                                                     >
                                                         Remove Selected
                                                     </button>
@@ -502,12 +492,11 @@ const MyCart = () => {
                             </div>
                         </div>
 
-                        {/* Rest of your existing code (address selection, payment, order summary) */}
                         <div className='container'>
                             <div className='row'>
-                                <div className="col-sm-6 border border-0">
-                                    <div className="card">
-                                        <div className="card-header bg-dark text-white">
+                                <div className="col-sm-6">
+                                    <div className="card mb-3" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                                        <div className="card-header" style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)", color: "white" }}>
                                             <h5 className="mb-0">Delivery Address</h5>
                                         </div>
                                         <div className="card-body">
@@ -516,9 +505,14 @@ const MyCart = () => {
                                                     {addresses.map((addr) => (
                                                         <div
                                                             key={addr._id}
-                                                            className={`mb-3 p-3 border rounded ${selectedAddress?._id === addr._id ? "border-primary bg-light" : ""}`}
+                                                            className={`mb-3 p-3 border rounded ${selectedAddress?._id === addr._id ? "border-primary" : ""}`}
                                                             onClick={() => handleSelectAddress(addr)}
-                                                            style={{ cursor: "pointer" }}
+                                                            style={{ 
+                                                                cursor: "pointer",
+                                                                background: "rgba(255, 255, 255, 0.03)",
+                                                                borderColor: selectedAddress?._id === addr._id ? "rgba(13, 110, 253, 0.5)" : "rgba(255, 255, 255, 0.1)",
+                                                                color: "white"
+                                                            }}
                                                         >
                                                             <div className="form-check">
                                                                 <input
@@ -526,6 +520,7 @@ const MyCart = () => {
                                                                     className="form-check-input"
                                                                     checked={selectedAddress?._id === addr._id}
                                                                     onChange={() => { }}
+                                                                    style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                                 />
                                                                 <label className="form-check-label">
                                                                     <strong>{addr.name}</strong> ({addr.type})
@@ -537,21 +532,23 @@ const MyCart = () => {
                                                             <p className="mb-0">Phone: {addr.mobile}</p>
                                                             <p className="mb-0">Email: {addr.email}</p>
                                                             <button
-                                                                className="btn btn-sm btn-outline-danger mt-2"
+                                                                className="btn btn-outline-danger btn-sm mt-2"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (window.confirm("Are you sure you want to delete this address?")) {
                                                                         handleDeleteAddress(addr._id);
                                                                     }
                                                                 }}
+                                                                // {style={{ background: "transparent", color: "#dc3545", borderColor: "rgba(220, 53, 69, 0.5)" }}}
                                                             >
                                                                 Delete
                                                             </button>
                                                         </div>
                                                     ))}
                                                     <button
-                                                        className="btn btn-outline-dark w-100"
+                                                        className="btn w-100"
                                                         onClick={() => setShowAddressForm(true)}
+                                                        style={{ background: "transparent", color: "white", borderColor: "rgba(255, 255, 255, 0.5)" }}
                                                     >
                                                         + Add New Address
                                                     </button>
@@ -560,8 +557,9 @@ const MyCart = () => {
                                                 <div className="text-center">
                                                     <p>No saved addresses</p>
                                                     <button
-                                                        className="btn btn-dark"
+                                                        className="btn"
                                                         onClick={() => setShowAddressForm(true)}
+                                                        style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                     >
                                                         Add Address
                                                     </button>
@@ -571,9 +569,9 @@ const MyCart = () => {
                                     </div>
                                 </div>
 
-                                <div className="col-sm-6 border border-0">
-                                    <div className="card mb-3">
-                                        <div className="card-header bg-dark text-white">
+                                <div className="col-sm-6">
+                                    <div className="card mb-3" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                                        <div className="card-header" style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)", color: "white" }}>
                                             <h5 className="mb-0">Payment Method</h5>
                                         </div>
                                         <div className="card-body">
@@ -582,13 +580,14 @@ const MyCart = () => {
                                                     className="form-select"
                                                     value={paymentMethod}
                                                     onChange={(e) => setPaymentMethod(e.target.value)}
+                                                    style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                 >
-                                                    <option value="COD">Cash on Delivery (COD)</option>
-                                                    <option value="Online">Online Payment (Credit/Debit Card, UPI, etc.)</option>
+                                                    <option value="COD" style={{ background: "#333", color: "white" }}>Cash on Delivery (COD)</option>
+                                                    <option value="Online" style={{ background: "#333", color: "white" }}>Online Payment (Credit/Debit Card, UPI, etc.)</option>
                                                 </select>
                                             </div>
                                             {paymentMethod === 'Online' && (
-                                                <div className="alert alert-info mt-3">
+                                                <div className="alert mt-3" style={{ background: "rgba(13, 202, 240, 0.1)", color: "white", borderColor: "rgba(13, 202, 240, 0.3)" }}>
                                                     You will be redirected to a secure payment gateway after placing your order.
                                                 </div>
                                             )}
@@ -596,19 +595,18 @@ const MyCart = () => {
                                     </div>
 
                                     {/* Order Summary Card */}
-                                    <div className="card">
-                                        <div className="card-body">
+                                    <div className="card" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                                        <div className="card-body" style={{ color: "white" }}>
                                             <h5 className="card-title">Order Summary</h5>
-                                            <hr />
+                                            <hr style={{ borderColor: "rgba(255, 255, 255, 0.1)" }} />
 
-                                            {/* Subtotal - Show either selected items or all items */}
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span>
                                                     Subtotal
                                                     {selectedItems.length > 0 ? (
-                                                        <span className="text-muted"> ({selectedItems.length} selected items)</span>
+                                                        <span style={{ color: "rgba(255, 255, 255, 0.7)" }}> ({selectedItems.length} selected items)</span>
                                                     ) : (
-                                                        <span className="text-muted"> ({cartData.totalItems} items)</span>
+                                                        <span style={{ color: "rgba(255, 255, 255, 0.7)" }}> ({cartData.totalItems} items)</span>
                                                     )}
                                                 </span>
                                                 <span>
@@ -618,15 +616,13 @@ const MyCart = () => {
                                                 </span>
                                             </div>
 
-                                            {/* Delivery Charge */}
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span>Delivery Charge</span>
                                                 <span>₹{cartData.deliveryCharge.toFixed(2)}</span>
                                             </div>
 
-                                            <hr />
+                                            <hr style={{ borderColor: "rgba(255, 255, 255, 0.1)" }} />
 
-                                            {/* Total Amount - Calculate based on selected items or all items */}
                                             <div className="d-flex justify-content-between fw-bold mb-4">
                                                 <span>Total Amount</span>
                                                 <span>
@@ -639,11 +635,16 @@ const MyCart = () => {
                                                 </span>
                                             </div>
 
-                                            {/* Checkout Button */}
                                             <button
-                                                className="btn btn-outline-dark w-100"
+                                                className="btn w-100"
                                                 onClick={handleCheckout}
                                                 disabled={cartData.loading || selectedItems.length < 0}
+                                                style={{ 
+                                                    background: "rgba(255, 255, 255, 0.1)", 
+                                                    color: "white", 
+                                                    borderColor: "rgba(255, 255, 255, 0.3)",
+                                                    opacity: cartData.loading ? 0.7 : 1
+                                                }}
                                             >
                                                 {cartData.loading ? 'Processing...' : 'Proceed to Checkout'}
                                             </button>
@@ -654,19 +655,20 @@ const MyCart = () => {
 
                             {/* Address Form Modal */}
                             {showAddressForm && (
-                                <div className="modal" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
+                                <div className="modal" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.8)" }}>
                                     <div className="modal-dialog modal-lg">
-                                        <div className="modal-content">
-                                            <div className="modal-header">
-                                                <h5 className="modal-title text-dark">Add New Address</h5>
+                                        <div className="modal-content" style={{ background: "rgba(40, 40, 40, 0.95)", color: "white" }}>
+                                            <div className="modal-header" style={{ borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                                                <h5 className="modal-title">Add New Address</h5>
                                                 <button
                                                     type="button"
                                                     className="btn-close"
                                                     onClick={() => setShowAddressForm(false)}
+                                                    style={{ filter: "invert(1)" }}
                                                 ></button>
                                             </div>
                                             <div className="modal-body">
-                                                <form className="row g-3 mt-4 text-dark" onSubmit={handleSaveAddress}>
+                                                <form className="row g-3 mt-4" onSubmit={handleSaveAddress}>
                                                     <div className="col-md-6">
                                                         <label className="form-label">Name*</label>
                                                         <input
@@ -676,6 +678,7 @@ const MyCart = () => {
                                                             value={address.name}
                                                             onChange={handleChangeAdd}
                                                             required
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-6">
@@ -688,6 +691,7 @@ const MyCart = () => {
                                                             onChange={handleChangeAdd}
                                                             required
                                                             pattern="[0-9]{10}"
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-12">
@@ -699,6 +703,7 @@ const MyCart = () => {
                                                             value={address.email}
                                                             onChange={handleChangeAdd}
                                                             required
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
 
@@ -711,6 +716,7 @@ const MyCart = () => {
                                                             value={address.addressline1}
                                                             onChange={handleChangeAdd}
                                                             required
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-12">
@@ -721,6 +727,7 @@ const MyCart = () => {
                                                             className="form-control"
                                                             value={address.addressline2}
                                                             onChange={handleChangeAdd}
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
 
@@ -733,6 +740,7 @@ const MyCart = () => {
                                                             value={address.city}
                                                             onChange={handleChangeAdd}
                                                             required
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-4">
@@ -744,6 +752,7 @@ const MyCart = () => {
                                                             value={address.state}
                                                             onChange={handleChangeAdd}
                                                             required
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-4">
@@ -755,6 +764,7 @@ const MyCart = () => {
                                                             value={address.country}
                                                             onChange={handleChangeAdd}
                                                             required
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-6">
@@ -767,6 +777,7 @@ const MyCart = () => {
                                                             onChange={handleChangeAdd}
                                                             required
                                                             pattern="[0-9]{6}"
+                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
 
@@ -782,6 +793,7 @@ const MyCart = () => {
                                                                     checked={address.type === type}
                                                                     onChange={handleChangeAdd}
                                                                     id={`type-${type}`}
+                                                                    style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                                 />
                                                                 <label className="form-check-label" htmlFor={`type-${type}`}>
                                                                     {type}
@@ -791,13 +803,18 @@ const MyCart = () => {
                                                     </div>
 
                                                     <div className="col-12 text-center mt-3">
-                                                        <button type="submit" className="btn btn-success me-2">
+                                                        <button 
+                                                            type="submit" 
+                                                            className="btn me-2"
+                                                            style={{ background: "rgba(25, 135, 84, 0.2)", color: "white", borderColor: "rgba(25, 135, 84, 0.5)" }}
+                                                        >
                                                             Save Address
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="btn btn-secondary"
+                                                            className="btn"
                                                             onClick={() => setShowAddressForm(false)}
+                                                            style={{ background: "rgba(108, 117, 125, 0.2)", color: "white", borderColor: "rgba(108, 117, 125, 0.5)" }}
                                                         >
                                                             Cancel
                                                         </button>

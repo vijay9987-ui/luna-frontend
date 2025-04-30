@@ -242,13 +242,13 @@ const Dashboard = () => {
                         }}
                     >
                         <center>
-                            <input
+                            {/* {<input
                                 type="text"
                                 className="form-control search-input search w-75 w-md-50 w-lg-25"
                                 placeholder="Search"
                                 style={{ color: "white" }}
                             />
-                            <br />
+                            <br />} */}
                             <h1 className="text-light text-wrap text-center px-3" style={{ fontSize: "clamp(1.5rem, 5vw, 3rem)" }}>
                                 Level up Your Style With Our Summer Collections
                             </h1>
@@ -270,14 +270,14 @@ const Dashboard = () => {
                         <div className="row align-items-center text-center text-md-start">
                             <div className="col-12 col-md-4"></div>
                             <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#000000" }}>Recently viewed</h2>
+                                <h2 style={{ color: "#fff" }}>Recently viewed</h2>
                             </div>
-                            <div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
                                 <a href="/dashboard">
                                     Know More
                                     <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
                                 </a>
-                            </div>
+                            </div>} */}
                         </div>
                     </div>
                     <br /><br />
@@ -293,14 +293,14 @@ const Dashboard = () => {
                         <div className="row align-items-center text-center text-md-start">
                             <div className="col-12 col-md-4"></div>
                             <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#000000" }}>Category</h2>
+                                <h2 style={{ color: "#fff" }}>Category</h2>
                             </div>
-                            <div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
                                 <a href="/dashboard/categories">
                                     Know More
                                     <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
                                 </a>
-                            </div>
+                            </div>} */}
                         </div>
                     </div>
                     <br /><br />
@@ -320,10 +320,13 @@ const Dashboard = () => {
                                     src={category.imageUrl}
                                     className="card-img img-fluid"
                                     alt={category.categoryName}
-                                    style={{ filter: "blur(5px)", height: "200px", objectFit: "cover" }}
+                                    style={{ filter: "blur(10px)", height: "200px", objectFit: "cover" }}
                                 />
                                 <div className="card-img-overlay d-flex align-items-center justify-content-center">
-                                    <h5 className="card-title text-center fw-bold text-dark">{category.categoryName}</h5>
+                                    <h5 className="card-title text-center fw-bold text-white text-shadow">
+                                        {category.categoryName}
+                                    </h5>
+
                                 </div>
                             </div>
                         ))}
@@ -336,14 +339,14 @@ const Dashboard = () => {
                         <div className="row align-items-center text-center text-md-start">
                             <div className="col-12 col-md-4"></div>
                             <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#000000" }}>Best Sellers</h2>
+                                <h2 style={{ color: "#fff" }}>Best Sellers</h2>
                             </div>
-                            <div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
                                 <a href="/dashboard/most-wanted">
                                     Know More
                                     <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
                                 </a>
-                            </div>
+                            </div>} */}
                         </div>
                     </div>
                     <br /><br />
@@ -359,14 +362,14 @@ const Dashboard = () => {
                         <div className="row align-items-center text-center text-md-start">
                             <div className="col-12 col-md-4"></div>
                             <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#000000" }}>New Arrivals</h2>
+                                <h2 style={{ color: "#fff" }}>New Arrivals</h2>
                             </div>
-                            <div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
                                 <a href="/dashboard/new-arrivals">
                                     Know More
                                     <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
                                 </a>
-                            </div>
+                            </div>} */}
                         </div>
                     </div>
                     <br /><br />

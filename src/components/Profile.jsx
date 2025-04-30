@@ -384,7 +384,7 @@ const Profile = () => {
         <>
             <Navbar />
             <div className="container-fluid">
-                <div className="row p-5">
+                <div className="row p-5" style={{ background: "transparent", color: "white" }}>
                     {/* Sidebar */}
                     <div className="col-sm-4 p-5 border border-2">
                         <div className="d-flex align-items-center border border-1 p-3 shadow-sm rounded">
@@ -398,18 +398,18 @@ const Profile = () => {
                             <ul className="list-group list-group-flush">
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-heart me-2" ></i>
-                                    <a className="btn" data-bs-toggle="collapse" onClick={() => setStep(4)} style={{ cursor: "pointer" }} href="#collapsemywishlist">My Wishlist</a>
+                                    <a className="btn" data-bs-toggle="collapse" onClick={() => setStep(4)} style={{ cursor: "pointer", color: "white" }} href="#collapsemywishlist">My Wishlist</a>
                                 </p>
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-truck me-2"></i>
-                                    <a className="btn" onClick={() => setStep(1)} data-bs-toggle="collapse" href="#collapseorders">My orders</a>
+                                    <a className="btn" style={{ cursor: "pointer", color: "white" }} onClick={() => setStep(1)} data-bs-toggle="collapse" href="#collapseorders">My orders</a>
                                 </p>
-                                
+
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-cart-shopping me-2"></i>
                                     <a
                                         className="btn"
-                                        style={{ cursor: "pointer" }}
+                                        style={{ cursor: "pointer", color: "white" }}
                                         onClick={() => setStep(5)}
                                     >
                                         My Cart
@@ -417,14 +417,27 @@ const Profile = () => {
                                 </p>
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-regular fa-user me-2"></i>
-                                    <a className="btn" data-bs-toggle="collapse" href="#collapsesettings" onClick={() => setStep(2)}>Account Settings</a>
+                                    <a className="btn" data-bs-toggle="collapse" href="#collapsesettings" style={{ cursor: "pointer", color: "white" }} onClick={() => setStep(2)}>Account Settings</a>
                                 </p>
                                 <div className="collapse" id="collapsesettings">
-                                    <ul className="rounded">
-                                        <li className="list-group-item"><a onClick={() => setStep(2)} style={{ cursor: "pointer" }}>Profile Information</a></li>
-                                        <li className="list-group-item"><a onClick={() => setStep(3)} style={{ cursor: "pointer" }}>Manage address</a></li>
-                                        <li className="list-group-item">Notifications</li>
+                                    <ul className="rounded divide-y divide-gray-700 border border-gray-700">
+                                        <li
+                                            className="px-4 py-2 hover:bg-gray-800 cursor-pointer text-white"
+                                            onClick={() => setStep(2)}
+                                        >
+                                            Profile Information
+                                        </li>
+                                        <li
+                                            className="px-4 py-2 hover:bg-gray-800 cursor-pointer text-white"
+                                            onClick={() => setStep(3)}
+                                        >
+                                            Manage Address
+                                        </li>
+                                        {/* {<li className="px-4 py-2 hover:bg-gray-800 cursor-pointer text-white">
+                                            Notifications
+                                        </li>} */}
                                     </ul>
+
                                 </div>
                                 <p className="d-inline-flex align-items-center" style={{ cursor: "pointer" }}>
                                     <i className="fa-solid fa-arrow-right-from-bracket me-2"></i>
@@ -441,7 +454,7 @@ const Profile = () => {
                                 <h3 className="mb-4 text-center text-md-start">My Orders</h3>
 
                                 {ordersLoading ? (
-                                    <div className="text-center py-4">
+                                    <div className="text-center py-4" style={{ background: "transparent", color: "white" }}>
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Loading...</span>
                                         </div>
@@ -450,16 +463,16 @@ const Profile = () => {
                                 ) : ordersError ? (
                                     <div className="alert alert-danger">{ordersError}</div>
                                 ) : orders.length === 0 ? (
-                                    <div className="text-center py-4">
-                                        <p>You haven't placed any orders yet.</p>
-                                        <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+                                    <div className="text-center py-4" style={{ background: "transparent", color: "white" }}>
+                                        <p >You haven't placed any orders yet.</p>
+                                        <button className="btn btn-outline-light" onClick={() => navigate('/dashboard')}>
                                             Start Shopping
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="table-responsive">
+                                    <div className="table-responsive" style={{ background: "transparent", color: "white" }}>
                                         <table className="table table-hover align-middle">
-                                            <thead className="table-dark">
+                                            <thead style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)" }}>
                                                 <tr>
                                                     <th scope="col">Order</th>
                                                     <th scope="col">Items</th>
@@ -471,7 +484,7 @@ const Profile = () => {
                                             <tbody>
                                                 {orders.map(order => (
                                                     <tr key={order._id}>
-                                                        <td>
+                                                        <td style={{ background: "transparent", color: "white" }}>
                                                             <div className="text-break">
                                                                 <strong>ID:</strong> {order._id}
                                                                 <br />
@@ -479,7 +492,7 @@ const Profile = () => {
                                                             </div>
                                                         </td>
 
-                                                        <td>
+                                                        <td style={{ background: "transparent", color: "white" }}>
                                                             <div className="d-flex flex-column gap-2">
                                                                 {order.products.map(product => (
                                                                     <div key={product.productId._id} className="d-flex align-items-center gap-2">
@@ -499,9 +512,11 @@ const Profile = () => {
                                                             </div>
                                                         </td>
 
-                                                        <td>₹{order.totalAmount.toFixed(2)}</td>
+                                                        <td style={{ background: "transparent", color: "white" }}>
+                                                            ₹{order.totalAmount.toFixed(2)}
+                                                        </td>
 
-                                                        <td>
+                                                        <td style={{ background: "transparent", color: "white" }}>
                                                             <span
                                                                 className={`badge ${order.status === 'Delivered'
                                                                     ? 'bg-success'
@@ -516,9 +531,9 @@ const Profile = () => {
                                                             </span>
                                                         </td>
 
-                                                        <td>
+                                                        <td style={{ background: "transparent", color: "white" }}>
                                                             <button
-                                                                className="btn btn-sm btn-outline-primary w-100"
+                                                                className="btn btn-sm btn-outline-light w-100"
                                                                 onClick={() => handleViewDetails(order)}
                                                             >
                                                                 View Details
@@ -538,29 +553,29 @@ const Profile = () => {
                         {showOrderModal && selectedOrder && (
                             <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
                                 <div className="modal-dialog modal-lg modal-dialog-centered">
-                                    <div className="modal-content">
+                                    <div className="modal-content border border-light">
                                         <div className="modal-header">
                                             <h5 className="modal-title">Order Details</h5>
-                                            <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                                            <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
                                         </div>
-                                        <div className="modal-body">
-                                            <p className="text-dark "><strong>Order ID:</strong> {selectedOrder._id}</p>
-                                            <p className="text-dark "><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                                        <div className="modal-body" style={{ background: "transparent", color: "white" }}>
+                                            <p className=" "><strong>Order ID:</strong> {selectedOrder._id}</p>
+                                            <p className=" "><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
 
                                             <h6 className="mt-4 mb-2">Products:</h6>
-                                            <ul className="list-group">
+                                            <ul className="list-group" >
                                                 {selectedOrder.products.map(product => (
-                                                    <li key={product.productId._id} className="list-group-item d-flex justify-content-between align-items-center">
-                                                        <div className="d-flex align-items-center">
+                                                    <li key={product.productId._id} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: "transparent", color: "white" }}>
+                                                        <div className="d-flex align-items-center" style={{ background: "transparent", color: "white" }}>
                                                             <img
                                                                 src={product.productId.images?.[0] || "/fallback.png"}
                                                                 alt={product.productId.name}
                                                                 style={{ width: "50px", height: "50px", objectFit: "cover" }}
                                                                 className="rounded me-2"
                                                             />
-                                                            <div>
+                                                            <div style={{ background: "transparent", color: "white" }}>
                                                                 <div><strong>{product.productId.name}</strong></div>
-                                                                <div className="small text-muted">Qty: {product.quantity}</div>
+                                                                <div className="small text-light">Qty: {product.quantity}</div>
                                                             </div>
                                                         </div>
                                                         <span>₹{product.price?.toFixed(2) || "N/A"}</span>
@@ -569,12 +584,12 @@ const Profile = () => {
                                             </ul>
 
                                             <h6 className="mt-4 mb-2">Summary:</h6>
-                                            <ul className="list-group">
-                                                <li className="list-group-item d-flex justify-content-between">
+                                            <ul className="list-group" >
+                                                <li className="list-group-item d-flex justify-content-between" style={{ background: "transparent", color: "white" }}>
                                                     <span>Subtotal</span>
                                                     <span>₹{selectedOrder.totalAmount.toFixed(2)}</span>
                                                 </li>
-                                                <li className="list-group-item d-flex justify-content-between">
+                                                <li className="list-group-item d-flex justify-content-between" style={{ background: "transparent", color: "white" }}>
                                                     <span>Status</span>
                                                     <span className={`badge ${selectedOrder.status === 'Delivered'
                                                         ? 'bg-success'
@@ -592,7 +607,7 @@ const Profile = () => {
                                         </div>
                                         <div className="modal-footer">
                                             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
-                                                Close
+                                                print
                                             </button>
                                         </div>
                                     </div>
@@ -603,33 +618,54 @@ const Profile = () => {
 
 
                         {step === 2 && (
-                            <form className="p-4 border rounded shadow-sm bg-light">
+                            <form className="p-4 border rounded shadow-sm bg-transparent text-white">
                                 <div className="d-flex justify-content-between mb-3">
-                                    <h4>Profile Information</h4>
+                                    <h4 className="text-white">Profile Information</h4>
                                     <button
                                         type="button"
-                                        className={`btn btn-sm ${isEditing ? "btn-dark" : "btn-outline-dark"}`}
+                                        className={`btn btn-sm ${isEditing ? "btn-light" : "btn-outline-light"}`}
                                         onClick={isEditing ? handleUpdate : () => setIsEditing(true)}
                                     >
                                         {isEditing ? "Save" : "Edit"}
                                     </button>
                                 </div>
+
                                 {message && <p className="text-success">{message}</p>}
 
                                 <div className="row mb-3">
                                     <div className="col-md-6">
-                                        <label>First Name</label>
-                                        <input type="text" className="form-control" name="firstName" value={formData.firstName} onChange={handleChange} readOnly={!isEditing} />
+                                        <label className="form-label text-white">First Name</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-transparent text-white border-white"
+                                            name="firstName"
+                                            value={formData.firstName}
+                                            onChange={handleChange}
+                                            readOnly={!isEditing}
+                                        />
                                     </div>
                                     <div className="col-md-6">
-                                        <label>Last Name</label>
-                                        <input type="text" className="form-control" name="lastName" value={formData.lastName} onChange={handleChange} readOnly={!isEditing} />
+                                        <label className="form-label text-white">Last Name</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-transparent text-white border-white"
+                                            name="lastName"
+                                            value={formData.lastName}
+                                            onChange={handleChange}
+                                            readOnly={!isEditing}
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="mb-3">
-                                    <label>Gender</label>
-                                    <select className="form-select" name="gender" value={formData.gender} onChange={handleChange} disabled={!isEditing}>
+                                    <label className="form-label text-white">Gender</label>
+                                    <select
+                                        className="form-select bg-transparent text-white border-white"
+                                        name="gender"
+                                        value={formData.gender}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+                                    >
                                         <option value="none" disabled>Select Gender</option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -637,16 +673,32 @@ const Profile = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label>Email</label>
-                                    <input type="email" className="form-control" name="email" value={formData.email} onChange={handleChange} readOnly={!isEditing} />
+                                    <label className="form-label text-white">Email</label>
+                                    <input
+                                        type="email"
+                                        className="form-control bg-transparent text-white border-white"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        readOnly={!isEditing}
+                                    />
                                 </div>
 
                                 <div className="mb-3">
-                                    <label>Mobile</label>
-                                    <input type="tel" className="form-control" name="mobile" value={formData.mobile} onChange={handleChange} readOnly={!isEditing} maxLength={10} />
+                                    <label className="form-label text-white">Mobile</label>
+                                    <input
+                                        type="tel"
+                                        className="form-control bg-transparent text-white border-white"
+                                        name="mobile"
+                                        value={formData.mobile}
+                                        onChange={handleChange}
+                                        readOnly={!isEditing}
+                                        maxLength={10}
+                                    />
                                 </div>
                             </form>
                         )}
+
 
                         {step === 3 && (
                             <>
@@ -672,7 +724,7 @@ const Profile = () => {
                                 )) : <p>No saved addresses.</p>}
 
 
-                                <button className="btn btn-outline-dark mt-2" onClick={() => setShowAddressForm(true)}>Add New Address</button>
+                                <button className="btn btn-outline-light mt-2" onClick={() => setShowAddressForm(true)}>Add New Address</button>
 
                                 {showAddressForm && (
                                     <form className="row g-3 mt-4" onSubmit={handleSaveAddress}>
@@ -756,7 +808,8 @@ const Profile = () => {
                                             wishlistProducts.map((product, index) => (
                                                 <div
                                                     key={product._id || `wishlist-${index}`}
-                                                    className="position-relative border mb-3 shadow-sm p-2 rounded bg-white"
+                                                    className="position-relative border mb-3 shadow-sm p-2 rounded"
+                                                    style={{ background: "transparent", color: "white" }}
                                                     onClick={() => handlePurchase(product)}
                                                 >
                                                     <div className="d-flex flex-column flex-sm-row align-items-start">
@@ -779,7 +832,7 @@ const Profile = () => {
                                                             onClick={() => handleRemove(product._id)}
                                                             className="position-absolute top-0 end-0 btn btn-sm"
                                                         >
-                                                            <i className="fa-solid fa-xmark text-dark"></i>
+                                                            <i className="fa-solid fa-xmark text-danger"></i>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -796,12 +849,13 @@ const Profile = () => {
                         )}
 
                         {step === 5 && (
-                            <div className="row">
+                            <div className="row text-white">
                                 <div className="col-md-12">
-                                    <div className="card mb-4 border-dark">
+                                    <h2 className="text-center">My Cart</h2>
+                                    <div className="card mb-4 border-light bg-transparent">
                                         <div className="card-body table-responsive">
-                                            <table className="table table-bordered align-middle text-center">
-                                                <thead className="table-dark">
+                                            <table className="table table-bordered align-middle text-center text-white">
+                                                <thead style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)" }}>
                                                     <tr>
                                                         <th>Image</th>
                                                         <th>Product</th>
@@ -813,8 +867,7 @@ const Profile = () => {
                                                 <tbody>
                                                     {cartData.cartItems.map((item) => (
                                                         <tr key={item.product._id}>
-                                                            {/* Product Image */}
-                                                            <td>
+                                                            <td style={{ background: "transparent", color: "white" }}>
                                                                 <img
                                                                     src={item.product.images?.[0] || "/fallback.png"}
                                                                     alt={item.product.name}
@@ -822,24 +875,20 @@ const Profile = () => {
                                                                     style={{ maxHeight: "80px" }}
                                                                 />
                                                             </td>
-
-                                                            {/* Product Details */}
-                                                            <td className="text-start">
-                                                                <h6 className="text-dark mb-1">{item.product.name}</h6>
-                                                                <small className="text-secondary">
+                                                            <td className="text-start" style={{ background: "transparent", color: "white" }}>
+                                                                <h6 className="text-white mb-1">{item.product.name}</h6>
+                                                                <small className="text-light">
                                                                     {item.color && `Color: ${item.color}`}
                                                                     {item.size && ` | Size: ${item.size}`}
                                                                 </small>
-                                                                <div className="fw-bold mt-1">
+                                                                <div className="fw-bold mt-1 text-white">
                                                                     ₹{item.product.price.toFixed(2)}
                                                                 </div>
                                                             </td>
-
-                                                            {/* Quantity Controls */}
-                                                            <td>
+                                                            <td style={{ background: "transparent", color: "white" }}>
                                                                 <div className="d-flex justify-content-center align-items-center">
                                                                     <button
-                                                                        className="btn btn-outline-dark btn-sm border-dark"
+                                                                        className="btn btn-outline-light btn-sm"
                                                                         onClick={() => updateQuantity(item.product._id, "decrement")}
                                                                         disabled={cartData.loading}
                                                                     >
@@ -847,7 +896,7 @@ const Profile = () => {
                                                                     </button>
                                                                     <span className="mx-3">{item.quantity}</span>
                                                                     <button
-                                                                        className="btn btn-outline-dark btn-sm border-dark"
+                                                                        className="btn btn-outline-light btn-sm"
                                                                         onClick={() => updateQuantity(item.product._id, "increment")}
                                                                         disabled={cartData.loading}
                                                                     >
@@ -855,21 +904,17 @@ const Profile = () => {
                                                                     </button>
                                                                 </div>
                                                             </td>
-
-                                                            {/* Subtotal */}
-                                                            <td className="fw-semibold text-dark">
+                                                            <td className="fw-semibold text-white" style={{ background: "transparent", color: "white" }}>
                                                                 ₹{(item.product.price * item.quantity).toFixed(2)}
                                                             </td>
-
-                                                            {/* Remove Button */}
-                                                            <td>
+                                                            <td style={{ background: "transparent", color: "white" }}>
                                                                 <button
-                                                                    className="btn btn-sm btn-outline-danger border-danger"
+                                                                    className="btn btn-sm btn-outline-danger"
                                                                     onClick={() => removeItem(item.product._id)}
                                                                     disabled={cartData.loading}
                                                                     title="Remove Item"
                                                                 >
-                                                                    <i className="fa-solid fa-trash"></i>
+                                                                    <i className="fa-solid fa-trash text-white"></i>
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -880,14 +925,11 @@ const Profile = () => {
                                     </div>
                                 </div>
 
-
-
-
                                 <div className="col-12 col-sm-6 col-md-6">
-                                    <div className="card">
+                                    <div className="card bg-transparent border-light text-white">
                                         <div className="card-body">
                                             <h5 className="card-title">Order Summary</h5>
-                                            <hr />
+                                            <hr className="border-light" />
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span>Subtotal ({cartData.totalItems} items)</span>
                                                 <span>₹{cartData.subTotal.toFixed(2)}</span>
@@ -896,13 +938,13 @@ const Profile = () => {
                                                 <span>Delivery Charge</span>
                                                 <span>₹{cartData.deliveryCharge.toFixed(2)}</span>
                                             </div>
-                                            <hr />
+                                            <hr className="border-light" />
                                             <div className="d-flex justify-content-between fw-bold mb-4">
                                                 <span>Total Amount</span>
                                                 <span>₹{cartData.finalAmount.toFixed(2)}</span>
                                             </div>
                                             <button
-                                                className="btn btn-outline-dark w-100"
+                                                className="btn btn-outline-light w-100"
                                                 onClick={proceedToCheckout}
                                                 disabled={cartData.loading || cartData.cartItems.length === 0}
                                             >
@@ -912,8 +954,8 @@ const Profile = () => {
                                     </div>
                                 </div>
                             </div>
-
                         )}
+
 
                         {step === 6 && (
                             <ProductDetails

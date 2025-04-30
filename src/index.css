@@ -1,6 +1,15 @@
 .welcome {
-  background-image: url('https://c0.wallpaperflare.com/preview/951/627/759/women-s-black-dress.jpg');
+  /* background-image: url('https://c0.wallpaperflare.com/preview/951/627/759/women-s-black-dress.jpg'); */
   color: white;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+#root {
+  /* {background-image: url('https://img.freepik.com/premium-photo/milky-way-galaxy-backgrounds-astronomy-nature_53876-295233.jpg?semt=ais_hybrid&w=740');} */
+  background-color: black;
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -85,12 +94,8 @@ input::placeholder {
   color: #666;
 }
 
-.navbar {
-  background-color: white;
-  color: black;
-}
 
-.search {
+/* {.search {
   width: 544px;
   height: 56px;
   top: 305px;
@@ -109,15 +114,16 @@ input::placeholder {
 }
 
 .search-input::placeholder {
-  color: white;  /*rgba(255, 255, 255, 0.7)*/
-}
+  color: white;
+  /*rgba(255, 255, 255, 0.7)
+
 
 .search-input:focus {
   border-color: white;
   background: transparent;
   color: white;
   outline: none;
-}
+}*/
 
 .card-img-overlay {
   display: flex;
@@ -146,12 +152,18 @@ input::placeholder {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.navbar {
+  background-color: transparent;
+  color: white;
+}
+
 .navbar-nav .nav-item .nav-link {
   font-weight: 500;
+  color: white;
 }
 
 .navbar-nav .nav-item .nav-link:hover {
-  color: #367619;
+  color: #fff;
 }
 
 .dropdown-menu.show {
@@ -235,22 +247,28 @@ input::placeholder {
 
 /* Fullscreen modal blur effect */
 .modal {
-  background: transparent !important; /* Fully transparent background */
-  backdrop-filter: blur(20px); /* Strong blur effect */
+  background: transparent !important;
+  /* Fully transparent background */
+  backdrop-filter: blur(20px);
+  /* Strong blur effect */
   -webkit-backdrop-filter: blur(20px);
 }
 
 /* Override Bootstrap's default dark overlay */
 .modal-backdrop {
-  background-color: transparent !important; /* Fully transparent */
-  backdrop-filter: blur(20px); /* Applies blur effect to the whole screen */
+  background-color: transparent !important;
+  /* Fully transparent */
+  backdrop-filter: blur(20px);
+  /* Applies blur effect to the whole screen */
   -webkit-backdrop-filter: blur(20px);
 }
 
 /* Modal content with frosted glass effect */
 .modal-content {
-  background: white !important; /* White background with transparency */
-  backdrop-filter: blur(15px); /* Softer blur */
+  background: transparent !important;
+  /* White background with transparency */
+  backdrop-filter: blur(15px);
+  /* Softer blur */
   -webkit-backdrop-filter: blur(15px);
   border: none;
   border-radius: 10px;
@@ -260,41 +278,53 @@ input::placeholder {
 /* Modal header and body text */
 .modal-header,
 .modal-body {
-  color: white; /* White text */
+  color: white;
+  /* White text */
 }
 
 /* Ensuring all text remains readable */
 .modal-body p,
 .modal-body h5 {
-  color: white; /* White text */
+  color: white;
+  /* White text */
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Improves readability */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  /* Improves readability */
 }
 
 /* catogory session in dashboard */
 ::-webkit-scrollbar {
   height: 6px;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: #aaa;
   border-radius: 4px;
 }
+
 .custom-scroll {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 .custom-scroll::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 /* Profile mywishlist scroolbar */
 .hide-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE 10+ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 /* Logo Animation Container */
@@ -316,63 +346,73 @@ input::placeholder {
 .logo-animation {
   height: 150px;
   width: 150px;
-  animation: 
-    dropIn 0.8s ease-out,
-    pulse 0.5s ease-in-out 0.8s 3,
-    rotate 1s ease-in-out 2.3s,
-    zoomOut 1s ease-in 3.3s forwards;
+  animation:
+    dotToFullscreen 1s ease-out,
+    drawBack 1s ease-in-out 1s forwards,
+    pulse 0.5s ease-in-out 2s 1,
+    subtleFloat 1s ease-in-out 2.5s infinite;
   transform-origin: center;
 }
 
-@keyframes dropIn {
+@keyframes dotToFullscreen {
   0% {
-    transform: translateY(-100vh) scale(0.5);
+    transform: scale(0);
     opacity: 0;
+    border-radius: 50%;
+    background: white;
   }
-  80% {
-    transform: translateY(20px) scale(1.1);
-  }
-  100% {
-    transform: translateY(0) scale(1);
+
+  50% {
+    transform: scale(10);
     opacity: 1;
+    border-radius: 50%;
+    background: white;
+  }
+
+  100% {
+    transform: scale(20);
+    opacity: 1;
+    border-radius: 0;
+    background: transparent;
+    filter: brightness(100);
+  }
+}
+
+@keyframes drawBack {
+  0% {
+    transform: scale(20);
+    opacity: 1;
+    filter: brightness(100);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: brightness(1);
   }
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.15);
   }
 }
 
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(15deg);
-  }
-  50% {
-    transform: rotate(-10deg);
-  }
-  75% {
-    transform: rotate(5deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
-}
+@keyframes subtleFloat {
 
-@keyframes zoomOut {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0%,
   100% {
-    transform: scale(0.5);
-    opacity: 0;
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
   }
 }
 
@@ -387,24 +427,14 @@ input::placeholder {
 .login-container {
   opacity: 0;
   transform: scale(0.95);
-  animation: 
-    fadeIn 0.8s ease-out 3.8s forwards,
-    subtleFloat 4s ease-in-out 4s infinite;
+  animation:
+    fadeIn 0.8s ease-out 3.6s forwards;
 }
 
 @keyframes fadeIn {
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes subtleFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(0px);
   }
 }
 
@@ -430,14 +460,22 @@ input::placeholder {
   border-radius: 10px;
   background: #f9f9f9;
 }
+
 .order-item-image {
   width: 50px;
   height: 50px;
   object-fit: cover;
   margin-right: 10px;
 }
+
 .order-status-badge {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 0.8rem;
+}
+
+input::placeholder,
+select:disabled,
+option {
+  color: rgba(255, 255, 255, 0.7);
 }

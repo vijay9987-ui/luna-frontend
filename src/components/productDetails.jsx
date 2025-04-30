@@ -83,7 +83,7 @@ const ProductDetails = ({
     return (
         <div className="container my-4">
             <button
-                className="btn btn-outline-secondary mb-3"
+                className="btn btn-outline-light mb-3"
                 onClick={goBack}
             >
                 ← Back to Products
@@ -113,7 +113,7 @@ const ProductDetails = ({
 
             <div className="row g-4">
                 <div className="col-md-6">
-                    <div className="card h-100 border-0 shadow-sm">
+                    <div className="card h-100 border-light shadow-sm rounded" style={{background: "transparent", color: "white"}}>
                         <img
                             src={mainImage}
                             alt={selectedItem.name}
@@ -121,7 +121,7 @@ const ProductDetails = ({
                             style={{
                                 maxHeight: "400px",
                                 objectFit: "contain",
-                                backgroundColor: "#f8f9fa"
+                                backgroundColor: "transparent"
                             }}
                         />
 
@@ -150,13 +150,13 @@ const ProductDetails = ({
                 </div>
 
                 <div className="col-md-6">
-                    <div className="card h-100 border-0 shadow-sm">
+                    <div className="card h-100 border-light shadow-sm" style={{background: "transparent", color: "white"}}>
                         <div className="card-body">
                             <h2 className="card-title mb-3">{selectedItem.name}</h2>
 
                             <div className="d-flex align-items-center mb-3">
                                 {selectedItem.originalPrice && (
-                                    <span className="text-decoration-line-through text-muted me-2">
+                                    <span className="text-decoration-line-through text-secoundary me-2">
                                         ₹{selectedItem.originalPrice}
                                     </span>
                                 )}
@@ -180,7 +180,7 @@ const ProductDetails = ({
                                             className={`fas fa-star ${i < selectedItem.rating ? 'text-warning' : 'text-secondary'}`}
                                         ></i>
                                     ))}
-                                    <span className="ms-2 small text-muted">
+                                    <span className="ms-2 small text-secoundary">
                                         ({selectedItem.ratingCount || 0} reviews)
                                     </span>
                                 </div>
@@ -198,7 +198,7 @@ const ProductDetails = ({
                                             <button
                                                 key={size}
                                                 type="button"
-                                                className={`btn ${selectedSize === size ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                className={`btn ${selectedSize === size ? 'btn-light' : 'btn-outline-light'}`}
                                                 onClick={() => setSelectedSize(size)}
                                             >
                                                 {size}
@@ -221,7 +221,7 @@ const ProductDetails = ({
                                             <button
                                                 key={color}
                                                 type="button"
-                                                className={`btn rounded-circle p-0 ${selectedColor === color ? 'border-3 border-primary' : 'border-1 border-secondary'}`}
+                                                className={`btn rounded-circle p-0 ${selectedColor === color ? 'border-3 border-light' : 'border-1 border-secondary'}`}
                                                 onClick={() => setSelectedColor(color)}
                                                 style={{
                                                     width: '40px',
@@ -274,7 +274,7 @@ const ProductDetails = ({
                                 </div>
 
                                 <button
-                                    className="btn btn-success px-4 py-2 flex-grow-1"
+                                    className="btn btn-light px-4 py-2 flex-grow-1"
                                     onClick={addToCart}
                                     disabled={
                                         isLoading ||
@@ -295,7 +295,7 @@ const ProductDetails = ({
 
                             <div className="d-grid gap-2">
                                 <button
-                                    className="btn btn-primary"
+                                    className="btn btn-light"
                                     onClick={() => navigate('/dashboard/my-cart')}
                                     disabled={
                                         isLoading ||

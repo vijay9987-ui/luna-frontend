@@ -193,24 +193,35 @@ const newArrival = () => {
                                         <button
                                             className="page-link"
                                             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            style={{ background: "transparent", color: "white" }}
                                         >
                                             Previous
                                         </button>
                                     </li>
                                     {[...Array(totalPages).keys()].map(num => (
-                                        <li key={num} className={`page-item ${currentPage === num + 1 ? 'active' : ''}`}>
+                                        <li
+                                            key={num}
+                                            className={`page-item ${currentPage === num + 1 ? 'active' : ''}`}
+                                        >
                                             <button
                                                 className="page-link"
                                                 onClick={() => setCurrentPage(num + 1)}
+                                                style={{
+                                                    background: currentPage === num + 1 ? "white" : "transparent",
+                                                    color: currentPage === num + 1 ? "black" : "white",
+                                                    borderColor: "white"
+                                                }}
                                             >
                                                 {num + 1}
                                             </button>
                                         </li>
+
                                     ))}
                                     <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
                                         <button
                                             className="page-link"
                                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            style={{ background: "transparent", color: "white" }}
                                         >
                                             Next
                                         </button>
