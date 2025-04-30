@@ -331,12 +331,12 @@ const Dashboard = () => {
 
                     <br />
 
-                    {/* Most Wanted Section */}
+                    {/* Best Sellers Section */}
                     <div className="container">
                         <div className="row align-items-center text-center text-md-start">
                             <div className="col-12 col-md-4"></div>
                             <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#000000" }}>Most Wanted</h2>
+                                <h2 style={{ color: "#000000" }}>Best Sellers</h2>
                             </div>
                             <div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
                                 <a href="/dashboard/most-wanted">
