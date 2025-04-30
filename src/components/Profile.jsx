@@ -810,7 +810,6 @@ const Profile = () => {
                                                     key={product._id || `wishlist-${index}`}
                                                     className="position-relative border mb-3 shadow-sm p-2 rounded"
                                                     style={{ background: "transparent", color: "white" }}
-                                                    onClick={() => handlePurchase(product)}
                                                 >
                                                     <div className="d-flex flex-column flex-sm-row align-items-start">
                                                         {/* Product Image */}
@@ -819,6 +818,7 @@ const Profile = () => {
                                                             alt={product.name}
                                                             className="rounded img-fluid"
                                                             style={{ height: "100px", width: "100px", objectFit: "cover" }}
+                                                            onClick={() => handlePurchase(product)}
                                                         />
 
                                                         {/* Product Info */}
@@ -830,9 +830,9 @@ const Profile = () => {
                                                         {/* Remove Button */}
                                                         <button
                                                             onClick={() => handleRemove(product._id)}
-                                                            className="position-absolute top-0 end-0 btn btn-sm"
+                                                            className="position-absolute top-0 end-0 btn btn-sm btn-outline-danger"
                                                         >
-                                                            <i className="fa-solid fa-xmark text-danger"></i>
+                                                            <i className="fa-solid fa-xmark fa-lg"></i>
                                                         </button>
                                                     </div>
                                                 </div>
