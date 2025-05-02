@@ -6,6 +6,7 @@ import Newarrival from "./components/Newarrival";
 import Mycart from "./components/mycart";
 import Profile from "./components/Profile";
 import PrivateRoute from "./components/privateRoute";
+import CategoryPage from "./views/CategoryPage";
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/dashboard/most-wanted" element={<Mostwanted />} />
                     <Route path="/dashboard/new-arrivals" element={<Newarrival />} />
+                    <Route path="/dashboard/category/:categoryName" element={<CategoryPage />} />
                     <Route path="/dashboard/my-cart" element={<Mycart />} />
                     <Route path="/dashboard/profile" element={<Profile  />} />
                 </Route>

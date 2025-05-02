@@ -1,31 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import CategoryModal from "./CategoryModal"; // Import the new component
+
 
 function Navbar() {
   const navigate = useNavigate();
-  const categoryModalRef = useRef(null);
-  const [categories, setCategories] = useState([]);
-
-  const openCategoryModal = () => {
-    const modal = new window.bootstrap.Modal(categoryModalRef.current);
-    modal.show();
-  };
-
-  useEffect(() => {
-    axios.get("https://luna-backend-1.onrender.com/api/category/getall-cat")
-      .then((res) => {
-        if (Array.isArray(res.data)) {
-          setCategories(res.data);
-        } else {
-          console.error("Invalid category data", res.data);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching categories", err);
-      });
-  }, []);
+  
 
   const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
   const userId = storedUser.userId;
@@ -49,7 +29,7 @@ function Navbar() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg">
+      <nav className="navbar navbar-expand-lg" style={{ borderBottom: "solid 1px white"}}>
         <div className="container-fluid">
           <button
             className="navbar-toggler btn btn-light"
@@ -69,9 +49,7 @@ function Navbar() {
                 <Link className="nav-link mx-2" to="/dashboard">Home</Link>
               </li>
               <li className="nav-item">
-                <button className="nav-link btn btn-link mx-2" onClick={openCategoryModal}>
-                  Category
-                </button>
+                {/* {<Link className="nav-link mx-2" to="/dashboard/categorypage/:category">Category</Link>} */}
               </li>
               <li className="nav-item">
                 <Link className="nav-link mx-2" to="/dashboard/most-wanted">Most Wanted</Link>
@@ -108,8 +86,7 @@ function Navbar() {
         </div>
       </nav>
 
-      {/* Category Modal - Now using the separate component */}
-      <CategoryModal modalRef={categoryModalRef} categories={categories} />
+      
     </>
   );
 }

@@ -2,7 +2,7 @@ import React from "react";
 
 function Footer() {
   return (
-    <footer className="footer bg-black text-white py-5">
+    <footer className="footer bg-black text-white py-5" style={{ borderTop: "solid 1px white"}}>
       <div className="container">
         <div className="row text-center text-md-start">
           {/* Logo & About Section */}

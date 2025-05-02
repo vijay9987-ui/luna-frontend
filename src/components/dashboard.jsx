@@ -73,7 +73,6 @@ const Dashboard = () => {
     };
 
     // Fetch products
-    // Fetch products
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -85,7 +84,7 @@ const Dashboard = () => {
                 ]);
 
                 setNewArrivalsProducts(newArrivalsResponse.data);
-                setMostWantedProducts(bestSellersResponse.data); // Now using actual best sellers
+                setMostWantedProducts(bestSellersResponse.data);
                 setRecentlyViewedProducts(productsResponse.data.slice(5, 10));
             } catch (error) {
                 console.error("Error fetching products:", error);
@@ -114,7 +113,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get("https://luna-backend-1.onrender.com/api/category/getall-cat");
+                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/categories");
                 setCategories(response.data);
             } catch (error) {
                 console.error("Error fetching categories:", error);
@@ -136,6 +135,11 @@ const Dashboard = () => {
     const handlePurchase = (product) => {
         setSelectedItem(product);
         setStep(2);
+    };
+
+    const handleCategoryClick = (categoryName) => {
+        // No need to manually encode - React Router v6 handles this automatically
+        navigate(`/dashboard/category/${categoryName}`);
     };
 
     // Add to cart handler
@@ -242,13 +246,6 @@ const Dashboard = () => {
                         }}
                     >
                         <center>
-                            {/* {<input
-                                type="text"
-                                className="form-control search-input search w-75 w-md-50 w-lg-25"
-                                placeholder="Search"
-                                style={{ color: "white" }}
-                            />
-                            <br />} */}
                             <h1 className="text-light text-wrap text-center px-3" style={{ fontSize: "clamp(1.5rem, 5vw, 3rem)" }}>
                                 Level up Your Style With Our Summer Collections
                             </h1>
@@ -272,12 +269,6 @@ const Dashboard = () => {
                             <div className="col-12 col-md-4 text-center">
                                 <h2 style={{ color: "#fff" }}>Recently viewed</h2>
                             </div>
-                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
-                                <a href="/dashboard">
-                                    Know More
-                                    <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
-                                </a>
-                            </div>} */}
                         </div>
                     </div>
                     <br /><br />
@@ -293,44 +284,56 @@ const Dashboard = () => {
                         <div className="row align-items-center text-center text-md-start">
                             <div className="col-12 col-md-4"></div>
                             <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#fff" }}>Category</h2>
+                                <h2 style={{ color: "#fff" }}>Categories</h2>
                             </div>
-                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
-                                <a href="/dashboard/categories">
-                                    Know More
-                                    <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
-                                </a>
-                            </div>} */}
                         </div>
                     </div>
+
                     <br /><br />
 
-                    <div className="d-flex overflow-auto py-2 mx-5 custom-scroll" style={{ gap: "1rem", scrollSnapType: "x mandatory" }}>
-                        {categories.map((category) => (
+                    <div
+                        className="d-flex overflow-auto py-2 mx-5 custom-scroll"
+                        style={{ gap: "1rem", scrollSnapType: "x mandatory" }}
+                    >
+                        {categories.map((category, index) => (
                             <div
-                                key={category._id}
-                                className="card text-bg-dark shadow-sm overflow-hidden flex-shrink-0 mx-3"
+                                key={index}
+                                className="card bg-dark text-white shadow-sm overflow-hidden flex-shrink-0 mx-3 position-relative"
                                 style={{
                                     width: "16rem",
+                                    height: "11rem",
                                     scrollSnapAlign: "center",
                                     cursor: "pointer",
+                                    borderRadius: "1rem",
+                                    transition: "transform 0.3s",
+                                    overflow: "hidden",
+                                }}
+                                onClick={() => handleCategoryClick(category.categoryName)}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = "scale(1.05)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = "scale(1)";
                                 }}
                             >
                                 <img
                                     src={category.imageUrl}
-                                    className="card-img img-fluid"
-                                    alt={category.categoryName}
-                                    style={{ filter: "blur(10px)", height: "200px", objectFit: "cover" }}
+                                    className="w-100 h-100"
+                                    alt={`${category.categoryName} Image`}
+                                    style={{
+                                        objectFit: "cover",
+                                        filter: "brightness(60%)",
+                                    }}
                                 />
-                                <div className="card-img-overlay d-flex align-items-center justify-content-center">
-                                    <h5 className="card-title text-center fw-bold text-white text-shadow">
+                                <div className="card-img-overlay d-flex flex-column justify-content-center align-items-center text-center">
+                                    <h5 className="fw-bold text-white mb-2" style={{ textShadow: "1px 1px 5px rgba(0,0,0,0.7)" }}>
                                         {category.categoryName}
                                     </h5>
-
                                 </div>
                             </div>
                         ))}
                     </div>
+
 
                     <br />
 
@@ -341,12 +344,6 @@ const Dashboard = () => {
                             <div className="col-12 col-md-4 text-center">
                                 <h2 style={{ color: "#fff" }}>Best Sellers</h2>
                             </div>
-                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
-                                <a href="/dashboard/most-wanted">
-                                    Know More
-                                    <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
-                                </a>
-                            </div>} */}
                         </div>
                     </div>
                     <br /><br />
@@ -364,12 +361,6 @@ const Dashboard = () => {
                             <div className="col-12 col-md-4 text-center">
                                 <h2 style={{ color: "#fff" }}>New Arrivals</h2>
                             </div>
-                            {/* {<div className="col-12 col-md-4 text-md-end mt-2 mt-md-0">
-                                <a href="/dashboard/new-arrivals">
-                                    Know More
-                                    <i className="fa-solid fa-arrow-right-to-bracket fa-sm ms-1" style={{ color: "#404bdd" }}></i>
-                                </a>
-                            </div>} */}
                         </div>
                     </div>
                     <br /><br />
