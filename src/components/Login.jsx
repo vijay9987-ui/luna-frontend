@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-
+import { auth } from "../firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const Login = () => {
     const [mobileNumber, setMobileNumber] = useState("");
-    const [enteredNumbers, setEnteredNumbers] = useState([]);
     const [error, setError] = useState("");
     const [otp, setOtp] = useState("");
     const [generatedOtp, setGeneratedOtp] = useState(null);
@@ -15,6 +15,30 @@ const Login = () => {
 
     const navigate = useNavigate();
 
+    // Initialize reCAPTCHA only once
+    const configureCapcha = () => {
+        if (typeof window !== 'undefined' && !window.recaptchaVerifier) {
+            window.recaptchaVerifier = new RecaptchaVerifier(
+                auth,
+                "recaptcha-container",
+                {
+                    size: "invisible",
+                    callback: (response) => {
+                        console.log("reCAPTCHA solved:", response);
+                    },
+                    "expired-callback": () => {
+                        console.warn("reCAPTCHA expired. Resetting...");
+                    }
+                }
+            );
+
+            // Render reCAPTCHA after configuration
+            window.recaptchaVerifier.render().then((widgetId) => {
+                window.recaptchaWidgetId = widgetId;
+            });
+        }
+    };
+
     useEffect(() => {
         const storedUser = sessionStorage.getItem("user");
         if (storedUser) {
@@ -24,19 +48,22 @@ const Login = () => {
         // Animation sequence
         const timer1 = setTimeout(() => {
             setShowLogo(false);
-        }, 4000); // Logo shows for 1.5 seconds
+        }, 4000); // Logo shows for 4 seconds
 
         const timer2 = setTimeout(() => {
             setShowLogin(true);
-        }, 2700); // Login form appears 0.3s after logo starts fading
+        }, 2700); // Login form appears 2.7s after component mounts
 
+        // Cleanup timeout on component unmount
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
         };
     }, [navigate]);
 
-    // ... [rest of your existing state and handler functions] ...
+    useEffect(() => {
+        configureCapcha(); // Initial call to set up reCAPTCHA
+    }, []);
 
     const handleInputChange = (e) => {
         let value = e.target.value.replace(/\D/g, "");
@@ -48,13 +75,32 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         if (mobileNumber.length !== 10) {
             setError("Enter a valid 10-digit mobile number.");
-        } else {
-            const newOtp = Math.floor(100000 + Math.random() * 900000);
-            setGeneratedOtp(newOtp);
-            setStep(2);
-            setError("");
+            return;
+        }
+
+        try {
+            const phoneNumber = "+91" + mobileNumber;
+            const appVerifier = window.recaptchaVerifier;
+
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    window.confirmationResult = confirmationResult;
+                    console.log("OTP sent successfully!");
+                    setStep(2);
+                })
+                .catch((error) => {
+                    console.error("Error during OTP sending:", error);
+                    if (window.recaptchaVerifier) {
+                        window.recaptchaVerifier.clear();
+                    }
+                    setError("Failed to send OTP. Try again.");
+                });
+        } catch (err) {
+            console.error("Unexpected reCAPTCHA error:", err);
+            setError("Failed to initialize OTP service. Please refresh and try again.");
         }
     };
 
@@ -65,19 +111,36 @@ const Login = () => {
     };
 
     const copyOtp = () => {
-        navigator.clipboard.writeText(generatedOtp);
+        if (generatedOtp) {
+            navigator.clipboard.writeText(generatedOtp);
+        }
     };
 
     const verifyOtp = (e) => {
         e.preventDefault();
-        if (otp === generatedOtp.toString()) {
-            setEnteredNumbers([...enteredNumbers, mobileNumber]);
-            setOtp("");
-            setStep(3);
-            setError("");
-        } else {
-            setError("Invalid OTP. Please try again.");
+        
+        if (!otp || otp.length < 6) {
+            setError("Please enter a valid 6-digit OTP");
+            return;
         }
+
+        if (!window.confirmationResult) {
+            setError("OTP session expired. Please request a new OTP.");
+            return;
+        }
+
+        const code = otp;
+        window.confirmationResult.confirm(code)
+            .then((result) => {
+                const user = result.user;
+                console.log("OTP verified successfully:", user);
+                setStep(3); // Move to username step
+                setError("");
+            })
+            .catch((error) => {
+                console.error("OTP verification failed:", error);
+                setError("Invalid OTP. Please try again.");
+            });
     };
 
     const handleUsernameChange = (e) => {
@@ -90,7 +153,7 @@ const Login = () => {
         e.preventDefault();
 
         if (!username || username.length < 3 || username.length > 10) {
-            setError("Enter a valid Username!!");
+            setError("Username must be between 3-10 characters");
             return;
         }
 
@@ -145,6 +208,7 @@ const Login = () => {
 
                     {step === 1 && (
                         <form onSubmit={handleSubmit}>
+                            <div id="recaptcha-container"></div>
                             <h2 className="fw-bold">Welcome Back !</h2>
                             <p className="text-white opacity-50">Please Login To Your Account And Continue Your Shopping</p>
                             <label className="mt-3">Enter Mobile Number</label><br /><br />
@@ -171,13 +235,14 @@ const Login = () => {
                     {step === 2 && (
                         <form onSubmit={verifyOtp}>
                             <h2 className="fw-bold">Welcome Back !</h2>
-                            <p className="text-white opacity-100">Please enter the OTP sent to {mobileNumber}. <span onClick={() => setStep(1)}>Change</span></p>
+                            <p className="text-white opacity-100">Please enter the OTP sent to {mobileNumber}. <span style={{cursor: "pointer", textDecoration: "underline"}} onClick={() => setStep(1)}>Change</span></p>
                             {generatedOtp && (
                                 <div className="mb-3">
                                     <input type="text" className="form-control text-center otp" style={{ background: "transparent", color: "white" }} value={generatedOtp} readOnly />
                                     <button type="button" className="btn btn-secondary mt-2 continue" onClick={copyOtp}>Copy OTP</button>
                                 </div>
                             )}
+
                             <label className="mt-3">Enter OTP</label><br /><br />
                             <div className="input-group mb-2">
                                 <input
