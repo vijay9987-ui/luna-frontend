@@ -80,6 +80,35 @@ const ProductDetails = ({
 
     if (!selectedItem) return null;
 
+    useEffect(() => {
+        const markAsRecentlyViewed = async () => {
+            try {
+                await axios.post(
+                    `https://luna-backend-1.onrender.com/api/products/recently-viewed/${userId}`,
+                    { productId: selectedItem._id },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${storedUser.token}` // Add if your API requires auth
+                        }
+                    }
+                );
+            } catch (err) {
+                console.error("Failed to mark as recently viewed:", {
+                    message: err.message,
+                    status: err.response?.status,
+                    data: err.response?.data
+                });
+            }
+
+        };
+
+        if (userId && selectedItem?._id) {
+            markAsRecentlyViewed();
+        }
+    }, [selectedItem?._id]);
+
+
     return (
         <div className="container my-4">
             <button
@@ -113,7 +142,7 @@ const ProductDetails = ({
 
             <div className="row g-4">
                 <div className="col-md-6">
-                    <div className="card h-100 border-light shadow-sm rounded" style={{background: "transparent", color: "white"}}>
+                    <div className="card h-100 border-light shadow-sm rounded" style={{ background: "transparent", color: "white" }}>
                         <img
                             src={mainImage}
                             alt={selectedItem.name}
@@ -150,7 +179,7 @@ const ProductDetails = ({
                 </div>
 
                 <div className="col-md-6">
-                    <div className="card h-100 border-light shadow-sm" style={{background: "transparent", color: "white"}}>
+                    <div className="card h-100 border-light shadow-sm" style={{ background: "transparent", color: "white" }}>
                         <div className="card-body">
                             <h2 className="card-title mb-3">{selectedItem.name}</h2>
 

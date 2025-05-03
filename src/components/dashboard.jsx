@@ -79,19 +79,31 @@ const Dashboard = () => {
                 // Fetch all products in parallel
                 const [newArrivalsResponse, bestSellersResponse, productsResponse] = await Promise.all([
                     axios.get("https://luna-backend-1.onrender.com/api/products/new-arrivals"),
-                    axios.get("https://luna-backend-1.onrender.com/api/products/best-sellers"),
-                    axios.get("https://luna-backend-1.onrender.com/api/products/getproducts")
+                    axios.get("https://luna-backend-1.onrender.com/api/products/best-sellers")
                 ]);
 
                 setNewArrivalsProducts(newArrivalsResponse.data);
                 setMostWantedProducts(bestSellersResponse.data);
-                setRecentlyViewedProducts(productsResponse.data.slice(5, 10));
             } catch (error) {
                 console.error("Error fetching products:", error);
             }
         };
         fetchProducts();
     }, []);
+
+    useEffect(() => {
+        const fetchRecentlyViewed = async () => {
+            try {
+                const res = await axios.get(`https://luna-backend-1.onrender.com/api/products/recently-viewed/${userId}`);
+                setRecentlyViewedProducts(res.data.slice(0,10));
+            } catch (err) {
+                console.error("Failed to fetch recently viewed products", err);
+            }
+        };
+
+        if (userId)
+            fetchRecentlyViewed();
+    }, [userId]);
 
     // Image slider effect
     useEffect(() => {
@@ -262,20 +274,22 @@ const Dashboard = () => {
 
             {step === 1 && (
                 <>
-                    {/* Recently Viewed Section */}
-                    <div className="container">
-                        <div className="row align-items-center text-center text-md-start">
-                            <div className="col-12 col-md-4"></div>
-                            <div className="col-12 col-md-4 text-center">
-                                <h2 style={{ color: "#fff" }}>Recently viewed</h2>
+                    {recentlyViewedProducts.length > 0 && (
+                        <div className="container mt-5">
+                            <div className="row align-items-center text-center text-md-start">
+                                <div className="col-12 col-md-4"></div>
+                                <div className="col-12 col-md-4 text-center">
+                                    <h2 style={{ color: "#fff" }}>Recently viewed</h2>
+                                </div>
+                            </div>
+                            <br /><br />
+
+                            <div className="d-flex overflow-auto py-2 mx-5 custom-scroll" style={{ gap: "1rem", scrollSnapType: "x mandatory" }}>
+                                {recentlyViewedProducts.map(renderProductCard)}
                             </div>
                         </div>
-                    </div>
-                    <br /><br />
+                    )}
 
-                    <div className="d-flex overflow-auto py-2 mx-5 custom-scroll" style={{ gap: "1rem", scrollSnapType: "x mandatory" }}>
-                        {recentlyViewedProducts.map(renderProductCard)}
-                    </div>
 
                     <br />
 
