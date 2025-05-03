@@ -22,13 +22,10 @@ const Login = () => {
 
     useEffect(() => {
         const storedUser = sessionStorage.getItem("user");
-        if (storedUser) {
-            navigate("/dashboard");
-        }
+        if (storedUser) navigate("/dashboard");
 
         const timer1 = setTimeout(() => setShowLogo(false), 4000);
         const timer2 = setTimeout(() => setShowLogin(true), 2700);
-
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
@@ -38,9 +35,7 @@ const Login = () => {
     useEffect(() => {
         let interval;
         if (resendDisabled && countdown > 0) {
-            interval = setInterval(() => {
-                setCountdown(prev => prev - 1);
-            }, 1000);
+            interval = setInterval(() => setCountdown(prev => prev - 1), 1000);
         } else if (countdown === 0) {
             setResendDisabled(false);
             setCountdown(30);
@@ -53,19 +48,14 @@ const Login = () => {
             try {
                 window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
                     size: 'invisible',
-                    callback: (response) => {
-                        console.log('reCAPTCHA solved');
-                    },
-                    'expired-callback': () => {
-                        console.log('reCAPTCHA expired');
-                    },
+                    callback: () => console.log('reCAPTCHA solved'),
+                    'expired-callback': () => console.log('reCAPTCHA expired'),
                 }, auth);
             } catch (error) {
                 console.error('Error initializing reCAPTCHA:', error);
             }
         }
     }, []);
-    
 
     const handleInputChange = (e) => {
         const value = e.target.value.replace(/\D/g, "");
@@ -83,17 +73,12 @@ const Login = () => {
             setError("Enter a valid 10-digit mobile number.");
             return;
         }
-    
+
         setLoading(true);
         try {
-            const fullPhone = `+91${mobileNumber}`; // Ensure correct phone format
-    
-            // Ensure that recaptchaVerifier is correctly initialized
+            const fullPhone = `+91${mobileNumber}`;
             const appVerifier = window.recaptchaVerifier;
-            if (!appVerifier) {
-                throw new Error("reCAPTCHA verification is not properly initialized.");
-            }
-    
+            if (!appVerifier) throw new Error("reCAPTCHA not initialized.");
             const confirmation = await signInWithPhoneNumber(auth, fullPhone, appVerifier);
             window.confirmationResult = confirmation;
             setStep(2);
@@ -106,7 +91,6 @@ const Login = () => {
             setLoading(false);
         }
     };
-    
 
     const handleOtpChange = (e) => {
         setOtp(e.target.value.replace(/\D/g, ""));
@@ -141,12 +125,10 @@ const Login = () => {
 
     const resendOtp = async () => {
         if (resendDisabled) return;
-        
         setResendDisabled(true);
         setCountdown(30);
         setError("");
         setLoading(true);
-        
         try {
             await handleSubmit({ preventDefault: () => {} });
         } catch (err) {
@@ -175,24 +157,17 @@ const Login = () => {
         try {
             const response = await fetch("https://luna-backend-1.onrender.com/api/users/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ username, mobileNumber })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, mobileNumber }),
             });
-
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Something went wrong");
-            }
+            if (!response.ok) throw new Error(data.error || "Something went wrong");
 
             sessionStorage.setItem("user", JSON.stringify({
                 userId: data.user._id,
                 username: data.user.username,
                 mobileNumber: data.user.mobileNumber
             }));
-
             navigate("/dashboard");
         } catch (err) {
             setError(err.message);
@@ -216,14 +191,16 @@ const Login = () => {
             <div className={`vh-100 w-100 d-flex justify-content-center align-items-center login-container ${showLogin ? 'login-visible' : ''}`}
                 style={{ background: "rgba(0, 0, 0, 0.6)" }}>
                 <div className="text-center p-4 rounded">
-                    <img src="https://dcassetcdn.com/design_img/2507971/637258/637258_13453039_2507971_014d29b7_image.png"
+                    <img
+                        src="https://dcassetcdn.com/design_img/2507971/637258/637258_13453039_2507971_014d29b7_image.png"
                         style={{ height: "150px", width: "150px" }}
                         alt="Luna logo"
-                        className="mb-3" />
+                        className="mb-3"
+                    />
 
                     {step === 1 && (
                         <form onSubmit={handleSubmit}>
-                            <h2 className="fw-bold">Welcome Back !</h2>
+                            <h2 className="fw-bold">Welcome Back!</h2>
                             <p className="text-white opacity-50">Please Login To Your Account And Continue Your Shopping</p>
                             <label className="mt-3">Enter Mobile Number</label><br /><br />
                             <div className="input-group mb-2">
@@ -239,32 +216,21 @@ const Login = () => {
                                 />
                             </div>
                             {error && <p className="text-danger">{error}</p>}
-                            <button
-                                type="submit"
-                                className="btn w-100 mt-3 continue"
-                                disabled={loading}
-                            >
+                            <button type="submit" className="btn w-100 mt-3 continue" disabled={loading}>
                                 {loading ? 'Sending...' : 'Continue'}
                             </button>
-                            <div className="or-divider">
-                                <hr /><span>or</span><hr />
-                            </div>
+                            <div className="or-divider"><hr /><span>or</span><hr /></div>
                             <div id="recaptcha-container"></div>
                         </form>
                     )}
 
                     {step === 2 && (
                         <form onSubmit={verifyOtp}>
-                            <h2 className="fw-bold">Welcome Back !</h2>
-                            <p className="text-white opacity-100">Please enter the OTP sent to {mobileNumber}. <span
-                                style={{ cursor: 'pointer', color: '#0d6efd' }}
-                                onClick={() => setStep(1)}
-                            >
-                                Change
-                            </span></p>
-
-                            <div id="recaptcha-container"></div>
-
+                            <h2 className="fw-bold">Verify OTP</h2>
+                            <p className="text-white opacity-100">
+                                OTP sent to {mobileNumber}.{" "}
+                                <span style={{ cursor: 'pointer', color: '#0d6efd' }} onClick={() => setStep(1)}>Change</span>
+                            </p>
                             <label className="mt-3">Enter OTP</label><br /><br />
                             <div className="input-group mb-2">
                                 <input
@@ -289,23 +255,17 @@ const Login = () => {
                                 </button>
                             </div>
                             {error && <p className="text-danger">{error}</p>}
-                            <button
-                                type="submit"
-                                className="btn w-100 mt-3 continue"
-                                disabled={loading}
-                            >
+                            <button type="submit" className="btn w-100 mt-3 continue" disabled={loading}>
                                 {loading ? 'Verifying...' : 'Verify OTP'}
                             </button>
-                            <div className="or-divider">
-                                <hr /><span>or</span><hr />
-                            </div>
+                            <div className="or-divider"><hr /><span>or</span><hr /></div>
                         </form>
                     )}
 
                     {step === 3 && (
                         <form onSubmit={handleFinalSubmit}>
-                            <h2 className="fw-bold">Welcome Back</h2>
-                            <p className="text-white opacity-50">Please Signup To Your Account And Continue Your Shopping</p>
+                            <h2 className="fw-bold">Finish Sign In</h2>
+                            <p className="text-white opacity-50">Enter your name to continue shopping</p>
                             <label className="mt-3">Enter Your Name</label><br /><br />
                             <input
                                 type="text"
@@ -316,7 +276,7 @@ const Login = () => {
                                 style={{ background: "transparent", color: "white" }}
                             />
                             {error && <p className="text-danger">{error}</p>}
-                            <label className="mt-3">Enter Mobile Number</label><br /><br />
+                            <label className="mt-3">Your Mobile Number</label><br /><br />
                             <div className="input-group mb-2">
                                 <span className="input-group-text mobile-input">+91</span>
                                 <input
@@ -327,16 +287,10 @@ const Login = () => {
                                     style={{ background: "transparent", color: "white" }}
                                 />
                             </div>
-                            <button
-                                type="submit"
-                                className="btn w-100 mt-3 continue"
-                                disabled={loading}
-                            >
+                            <button type="submit" className="btn w-100 mt-3 continue" disabled={loading}>
                                 {loading ? 'Processing...' : 'Proceed'}
                             </button>
-                            <div className="or-divider">
-                                <hr /><span>or</span><hr />
-                            </div>
+                            <div className="or-divider"><hr /><span>or</span><hr /></div>
                         </form>
                     )}
                 </div>
