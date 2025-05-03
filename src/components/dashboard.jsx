@@ -82,7 +82,7 @@ const Dashboard = () => {
                     axios.get("https://luna-backend-1.onrender.com/api/products/best-sellers")
                 ]);
 
-                setNewArrivalsProducts(newArrivalsResponse.data);
+                setNewArrivalsProducts(newArrivalsResponse.data.slice(0, 10));
                 setMostWantedProducts(bestSellersResponse.data);
             } catch (error) {
                 console.error("Error fetching products:", error);

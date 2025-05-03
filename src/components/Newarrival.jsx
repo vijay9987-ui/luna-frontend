@@ -63,7 +63,7 @@ const newArrival = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/getproducts");
+                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/new-arrivals");
                 setNewArrivalsProducts(response.data); // Remove the slice(0, 10) to get all products
             } catch (error) {
                 console.error("Error fetching products:", error);

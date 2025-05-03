@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Dashboard from "./components/dashboard";
-import Mostwanted from "./components/Mostwanted";
+import OnSaleProducts from "./components/OnSaleProducts";
 import Newarrival from "./components/Newarrival";
 import Mycart from "./components/mycart";
 import Profile from "./components/Profile";
@@ -18,7 +18,7 @@ function App() {
                 {/* Private Routes - Requires Authentication */}
                 <Route element={<PrivateRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/dashboard/most-wanted" element={<Mostwanted />} />
+                    <Route path="/dashboard/OnSaleProducts" element={<OnSaleProducts />} />
                     <Route path="/dashboard/new-arrivals" element={<Newarrival />} />
                     <Route path="/dashboard/category/:categoryName" element={<CategoryPage />} />
                     <Route path="/dashboard/my-cart" element={<Mycart />} />

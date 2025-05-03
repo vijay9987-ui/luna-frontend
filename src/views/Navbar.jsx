@@ -52,7 +52,7 @@ function Navbar() {
                 {/* {<Link className="nav-link mx-2" to="/dashboard/categorypage/:category">Category</Link>} */}
               </li>
               <li className="nav-item">
-                <Link className="nav-link mx-2" to="/dashboard/most-wanted">Most Wanted</Link>
+                <Link className="nav-link mx-2" to="/dashboard/OnSaleProducts">On-Sale Products</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link mx-2" to="/dashboard/new-arrivals">New Arrivals</Link>

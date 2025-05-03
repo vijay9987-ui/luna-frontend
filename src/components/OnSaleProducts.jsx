@@ -5,7 +5,7 @@ import Footer from '../views/Footer';
 import axios from 'axios';
 import ProductDetails from './productDetails';
 
-const Mostwanted = () => {
+const OnSaleProducts = () => {
     const [step, setStep] = useState(1);
     const [quantity, setQuantity] = useState(1);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -63,7 +63,7 @@ const Mostwanted = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/getproducts");
+                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/on-sale");
                 setMostWantedProducts(response.data); // Remove the slice(0, 10) to get all products
             } catch (error) {
                 console.error("Error fetching products:", error);
@@ -101,7 +101,7 @@ const Mostwanted = () => {
                 <div className="mostwanted">
                     <div className="wanted wanted-blur p-5 text-light align-items-center">
                         <center>
-                            <h1 className="text1">Most Wanted</h1><br />
+                            <h1 className="text1">On-Sale Products</h1><br />
                             <p className="text2">Latest Design For You Order Now.</p>
                         </center>
                     </div>
@@ -111,7 +111,6 @@ const Mostwanted = () => {
             {step === 1 && (
                 <>
                     <div className="d-flex flex-column align-items-center py-2">
-                        {/* Products Grid - Now using currentProducts instead of mostWantedProducts */}
                         <div className="d-flex flex-wrap justify-content-center" style={{ gap: "1rem", maxWidth: "1200px" }}>
                             {currentProducts.map((product) => {
                                 const isInWishlist = wishlist.includes(product._id);
@@ -138,7 +137,22 @@ const Mostwanted = () => {
                                             e.currentTarget.style.boxShadow = "none";
                                         }}
                                     >
-                                        {/* Product card content remains the same */}
+                                        {/* Discount Tag - Added here */}
+                                        {product.discount > 0 && (
+                                            <div
+                                                className="position-absolute bg-danger text-white px-2 py-1 rounded-end"
+                                                style={{
+                                                    top: "10px",
+                                                    left: "0",
+                                                    zIndex: 10,
+                                                    fontWeight: "bold",
+                                                    fontSize: "0.9rem"
+                                                }}
+                                            >
+                                                {product.discount}% OFF
+                                            </div>
+                                        )}
+
                                         <div style={{ position: "relative" }}>
                                             <img
                                                 src={product.images?.[0] || "fallback.png"}
@@ -184,6 +198,7 @@ const Mostwanted = () => {
                                 );
                             })}
                         </div>
+
 
                         {/* Pagination - Only show if there are multiple pages */}
                         {totalPages > 1 && (
@@ -249,4 +264,4 @@ const Mostwanted = () => {
     );
 };
 
-export default Mostwanted;
+export default OnSaleProducts;
