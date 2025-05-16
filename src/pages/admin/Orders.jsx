@@ -16,7 +16,7 @@ const Orders = () => {
         const fetchOrders = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`http://localhost:5000/api/users/allorders?page=${currentPage}&limit=${ordersPerPage}`);
+                const res = await axios.get(`https://luna-backend-1.onrender.com/api/users/allorders?page=${currentPage}&limit=${ordersPerPage}`);
                 setOrders(res.data.orders);
                 setTotalOrders(res.data.total);
             } catch (err) {

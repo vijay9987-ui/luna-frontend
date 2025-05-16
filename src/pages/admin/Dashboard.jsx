@@ -26,8 +26,8 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const [userRes, productRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/users/users'),
-        axios.get('http://localhost:5000/api/products/getproducts'),
+        axios.get('https://luna-backend-1.onrender.com/api/users/users'),
+        axios.get('https://luna-backend-1.onrender.com/api/products/getproducts'),
       ]);
 
       const users = userRes.data;
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
   const fetchOrders = async (page) => {
     try {
       const orderRes = await axios.get(
-        `http://localhost:5000/api/users/allorders?limit=${ordersPerPage}&page=${page}`
+        `https://luna-backend-1.onrender.com/api/users/allorders?limit=${ordersPerPage}&page=${page}`
       );
 
       const ordersData = orderRes.data;
