@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from "../views/Navbar";
-import Footer from '../views/Footer';
+import UserNavbar from "./UserNavbar";
+import UserFooter from './UserFooter';
 import axios from 'axios';
-import ProductDetails from './productDetails';
+import UserProductDetails from './UserProductDetails';
 
-const OnSaleProducts = () => {
+const UserNewArrivals = () => {
     const [step, setStep] = useState(1);
     const [quantity, setQuantity] = useState(1);
     const [selectedItem, setSelectedItem] = useState(null);
     const [cart, setCart] = useState([]);
     const navigate = useNavigate();
-    const [mostWantedProducts, setMostWantedProducts] = useState([]);
+    const [newArrivalsProducts, setNewArrivalsProducts] = useState([]);
     const [wishlist, setWishlist] = useState([]);
     const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
     const userId = storedUser.userId;
@@ -23,48 +23,16 @@ const OnSaleProducts = () => {
     // Calculate pagination
     const indexOfLastProduct = currentPage * productsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-    const currentProducts = mostWantedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-    const totalPages = Math.ceil(mostWantedProducts.length / productsPerPage);
+    const currentProducts = newArrivalsProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    const totalPages = Math.ceil(newArrivalsProducts.length / productsPerPage);
 
-    useEffect(() => {
-        const fetchWishlist = async () => {
-            try {
-                const res = await fetch(`https://luna-backend-1.onrender.com/api/users/wishlist/${userId}`);
-                const data = await res.json();
-                setWishlist(data.wishlist.map(item => item._id));
-            } catch (error) {
-                console.error("Failed to fetch wishlist", error);
-            }
-        };
-        fetchWishlist();
-    }, [userId]);
-
-    const toggleWishlist = async (productId) => {
-        try {
-            const res = await fetch(`https://luna-backend-1.onrender.com/api/products/wishlist/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ productId }),
-            });
-            const data = await res.json();
-
-            if (data.isInWishlist) {
-                setWishlist((prev) => [...prev, productId]);
-            } else {
-                setWishlist((prev) => prev.filter(id => id !== productId));
-            }
-        } catch (error) {
-            console.error("Error toggling wishlist", error);
-        }
-    };
+   
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/on-sale");
-                setMostWantedProducts(response.data); // Remove the slice(0, 10) to get all products
+                const response = await axios.get("https://luna-backend-1.onrender.com/api/products/new-arrivals");
+                setNewArrivalsProducts(response.data); // Remove the slice(0, 10) to get all products
             } catch (error) {
                 console.error("Error fetching products:", error);
             }
@@ -75,15 +43,15 @@ const OnSaleProducts = () => {
     // ... rest of your functions remain the same ...
 
     const quantityDec = () => {
-        setQuantity(prevQuantity => Math.max(prevQuantity - 1, 1));
+        setQuantity(prevQuantity => Math.max(prevQuantity - 1, 1)); // Prevents going below 1
     };
 
     const quantityInc = () => {
         setQuantity(prevQuantity => prevQuantity + 1);
     };
 
-    const handlePurchase = (product) => {
-        setSelectedItem(product);
+    const handlePurchase = (item) => {
+        setSelectedItem(item);
         setStep(2);
     };
     const addToCart = () => {
@@ -96,12 +64,12 @@ const OnSaleProducts = () => {
 
     return (
         <>
-            <Navbar />
+            <UserNavbar />
             <div className="d-flex justify-content-center">
                 <div className="mostwanted">
-                    <div className="wanted wanted-blur p-5 text-light align-items-center">
+                    <div className="wanted wanted-blur p-5 text-light aligfn-items-center">
                         <center>
-                            <h1 className="text1">On-Sale Products</h1><br />
+                            <h1 className="text1">New Arrivals</h1><br />
                             <p className="text2">Latest Design For You Order Now.</p>
                         </center>
                     </div>
@@ -111,6 +79,7 @@ const OnSaleProducts = () => {
             {step === 1 && (
                 <>
                     <div className="d-flex flex-column align-items-center py-2">
+                        {/* Products Grid - Now using currentProducts instead of newArrivalsProducts */}
                         <div className="d-flex flex-wrap justify-content-center" style={{ gap: "1rem", maxWidth: "1200px" }}>
                             {currentProducts.map((product) => {
                                 const isInWishlist = wishlist.includes(product._id);
@@ -137,22 +106,7 @@ const OnSaleProducts = () => {
                                             e.currentTarget.style.boxShadow = "none";
                                         }}
                                     >
-                                        {/* Discount Tag - Added here */}
-                                        {product.discount > 0 && (
-                                            <div
-                                                className="position-absolute bg-danger text-white px-2 py-1 rounded-end"
-                                                style={{
-                                                    top: "10px",
-                                                    left: "0",
-                                                    zIndex: 10,
-                                                    fontWeight: "bold",
-                                                    fontSize: "0.9rem"
-                                                }}
-                                            >
-                                                {product.discount}% OFF
-                                            </div>
-                                        )}
-
+                                        {/* Product card content remains the same */}
                                         <div style={{ position: "relative" }}>
                                             <img
                                                 src={product.images?.[0] || "fallback.png"}
@@ -168,10 +122,7 @@ const OnSaleProducts = () => {
                                                     zIndex: 10,
                                                     cursor: "pointer",
                                                 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleWishlist(product._id);
-                                                }}
+                                                
                                             >
                                                 <i
                                                     className={`fa-heart fa-2xl ${isInWishlist ? "fa-solid" : "fa-regular"}`}
@@ -198,7 +149,6 @@ const OnSaleProducts = () => {
                                 );
                             })}
                         </div>
-
 
                         {/* Pagination - Only show if there are multiple pages */}
                         {totalPages > 1 && (
@@ -249,7 +199,7 @@ const OnSaleProducts = () => {
             )}
 
             {step === 2 && (
-                <ProductDetails
+                <UserProductDetails
                     selectedItem={selectedItem}
                     quantity={quantity}
                     quantityDec={quantityDec}
@@ -259,9 +209,9 @@ const OnSaleProducts = () => {
                 />
             )}
 
-            <Footer />
+            <UserFooter />
         </>
     );
 };
 
-export default OnSaleProducts;
+export default UserNewArrivals;

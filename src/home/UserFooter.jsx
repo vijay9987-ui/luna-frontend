@@ -1,9 +1,9 @@
 import React from "react";
 import logo from '../components/asset/luna-logo.jpeg'
 
-function Footer() {
+function UserFooter() {
   return (
-    <footer className="footer bg-black text-white py-5" style={{ borderTop: "solid 1px white" }}>
+    <footer className="footer bg-black text-white py-5" style={{ borderTop: "solid 1px white"}}>
       <div className="container">
         <div className="row text-center text-md-start">
           {/* Logo & About Section */}
@@ -12,7 +12,7 @@ function Footer() {
               src={logo}
               alt="Logo"
               className="img-fluid mb-3 rounded-pill"
-              style={{ height: "100px", width: "120px" }}
+              style={{ height: "100px", width: "120px"}}
             />
             <p>
               Drawing is a visual art that uses an instrument to mark paper or another two-dimensional surface.
@@ -59,4 +59,4 @@ function Footer() {
   );
 }
 
-export default Footer;
+export default UserFooter;

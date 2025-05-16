@@ -4,6 +4,8 @@ import Footer from "../views/Footer";
 import Navbar from "../views/Navbar";
 import axios from "axios";
 import ProductDetails from "./productDetails";
+import html2pdf from 'html2pdf.js';
+
 
 const Profile = () => {
     const [step, setStep] = useState(2);
@@ -380,15 +382,30 @@ const Profile = () => {
         }
     }, [userId, step]);
 
+
+    const handleDownloadPDF = () => {
+        const element = document.getElementById("order-details-pdf");
+
+        const options = {
+            filename: `Order_${selectedOrder._id}.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        };
+
+        html2pdf().set(options).from(element).save();
+    };
+
+
     return (
         <>
             <Navbar />
             <div className="container-fluid">
-                <div className="row p-5" style={{ background: "transparent", color: "white" }}>
+                <div className="row p-5" >
                     {/* Sidebar */}
                     <div className="col-sm-4 p-5 border border-2">
                         <div className="d-flex align-items-center border border-1 p-3 shadow-sm rounded">
-                            <i className="fa-solid fa-user fa-2xl me-3" style={{ color: "#000000" }}></i>
+                            <i className="fa-solid fa-user fa-2xl me-3" style={{ color: "#000" }}></i>
                             <div>
                                 <h4>Hello,</h4>
                                 <p>{sessionUser.username}</p>
@@ -398,18 +415,18 @@ const Profile = () => {
                             <ul className="list-group list-group-flush">
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-heart me-2" ></i>
-                                    <a className="btn" data-bs-toggle="collapse" onClick={() => setStep(4)} style={{ cursor: "pointer", color: "white" }} href="#collapsemywishlist">My Wishlist</a>
+                                    <a className="btn" data-bs-toggle="collapse" onClick={() => setStep(4)} style={{ cursor: "pointer", color: "black" }} href="#collapsemywishlist">My Wishlist</a>
                                 </p>
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-truck me-2"></i>
-                                    <a className="btn" style={{ cursor: "pointer", color: "white" }} onClick={() => setStep(1)} data-bs-toggle="collapse" href="#collapseorders">My orders</a>
+                                    <a className="btn" style={{ cursor: "pointer", color: "black" }} onClick={() => setStep(1)} data-bs-toggle="collapse" href="#collapseorders">My orders</a>
                                 </p>
 
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-solid fa-cart-shopping me-2"></i>
                                     <a
                                         className="btn"
-                                        style={{ cursor: "pointer", color: "white" }}
+                                        style={{ cursor: "pointer", color: "black" }}
                                         onClick={() => setStep(5)}
                                     >
                                         My Cart
@@ -417,23 +434,25 @@ const Profile = () => {
                                 </p>
                                 <p className="d-inline-flex align-items-center">
                                     <i className="fa-regular fa-user me-2"></i>
-                                    <a className="btn" data-bs-toggle="collapse" href="#collapsesettings" style={{ cursor: "pointer", color: "white" }} onClick={() => setStep(2)}>Account Settings</a>
+                                    <a className="btn" data-bs-toggle="collapse" href="#collapsesettings" style={{ cursor: "pointer", color: "black" }} onClick={() => setStep(2)}>Account Settings</a>
                                 </p>
                                 <div className="collapse" id="collapsesettings">
                                     <ul className="rounded divide-y divide-gray-700 border border-gray-700">
                                         <li
-                                            className="px-4 py-2 hover:bg-gray-800 cursor-pointer text-white"
+                                            className="px-4 py-2"
                                             onClick={() => setStep(2)}
+                                            style={{ cursor: "pointer", color: "black" }}
                                         >
                                             Profile Information
                                         </li>
                                         <li
-                                            className="px-4 py-2 hover:bg-gray-800 cursor-pointer text-white"
+                                            className="px-4 py-2"
                                             onClick={() => setStep(3)}
+                                            style={{ cursor: "pointer", color: "black" }}
                                         >
                                             Manage Address
                                         </li>
-                                        {/* {<li className="px-4 py-2 hover:bg-gray-800 cursor-pointer text-white">
+                                        {/* {<li className="px-4 py-2">
                                             Notifications
                                         </li>} */}
                                     </ul>
@@ -454,7 +473,7 @@ const Profile = () => {
                                 <h3 className="mb-4 text-center text-md-start">My Orders</h3>
 
                                 {ordersLoading ? (
-                                    <div className="text-center py-4" style={{ background: "transparent", color: "white" }}>
+                                    <div className="text-center py-4">
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Loading...</span>
                                         </div>
@@ -463,18 +482,18 @@ const Profile = () => {
                                 ) : ordersError ? (
                                     <div className="alert alert-danger">{ordersError}</div>
                                 ) : orders.length === 0 ? (
-                                    <div className="text-center py-4" style={{ background: "transparent", color: "white" }}>
+                                    <div className="text-center py-4" >
                                         <p >You haven't placed any orders yet.</p>
-                                        <button className="btn btn-outline-light" onClick={() => navigate('/dashboard')}>
+                                        <button className="btn btn-outline-dark" onClick={() => navigate('/dashboard')}>
                                             Start Shopping
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="table-responsive" style={{ background: "transparent", color: "white" }}>
+                                    <div className="table-responsive border border-1" >
                                         <table className="table table-hover align-middle">
-                                            <thead style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)" }}>
+                                            <thead>
                                                 <tr>
-                                                    <th scope="col">Order</th>
+                                                    <th scope="col">Order/Date</th>
                                                     <th scope="col">Items</th>
                                                     <th scope="col">Total</th>
                                                     <th scope="col">Status</th>
@@ -484,15 +503,15 @@ const Profile = () => {
                                             <tbody>
                                                 {orders.map(order => (
                                                     <tr key={order._id}>
-                                                        <td style={{ background: "transparent", color: "white" }}>
+                                                        <td>
                                                             <div className="text-break">
-                                                                <strong>ID:</strong> {order._id}
-                                                                <br />
-                                                                <small>{new Date(order.createdAt).toLocaleDateString()}</small>
+                                                                <strong>ID:</strong> {order._id.slice(-6)}
+                                                                <br/>
+                                                                (<small>{new Date(order.createdAt).toLocaleDateString()}</small>)
                                                             </div>
                                                         </td>
 
-                                                        <td style={{ background: "transparent", color: "white" }}>
+                                                        <td>
                                                             <div className="d-flex flex-column gap-2">
                                                                 {order.products.map(product => (
                                                                     <div key={product.productId._id} className="d-flex align-items-center gap-2">
@@ -512,28 +531,28 @@ const Profile = () => {
                                                             </div>
                                                         </td>
 
-                                                        <td style={{ background: "transparent", color: "white" }}>
+                                                        <td>
                                                             ₹{order.totalAmount.toFixed(2)}
                                                         </td>
 
-                                                        <td style={{ background: "transparent", color: "white" }}>
+                                                        <td>
                                                             <span
-                                                                className={`badge ${order.status === 'Delivered'
+                                                                className={`badge ${order.orderStatus === 'Delivered'
                                                                     ? 'bg-success'
-                                                                    : order.status === 'Cancelled'
+                                                                    : order.orderStatus === 'Cancelled'
                                                                         ? 'bg-danger'
-                                                                        : order.status === 'Processing'
+                                                                        : order.orderStatus === 'Processing'
                                                                             ? 'bg-warning text-dark'
                                                                             : 'bg-info'
                                                                     }`}
                                                             >
-                                                                {order.status}
+                                                                {order.orderStatus}
                                                             </span>
                                                         </td>
 
-                                                        <td style={{ background: "transparent", color: "white" }}>
+                                                        <td>
                                                             <button
-                                                                className="btn btn-sm btn-outline-light w-100"
+                                                                className="btn btn-sm btn-outline-dark w-100"
                                                                 onClick={() => handleViewDetails(order)}
                                                             >
                                                                 View Details
@@ -553,29 +572,37 @@ const Profile = () => {
                         {showOrderModal && selectedOrder && (
                             <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
                                 <div className="modal-dialog modal-lg modal-dialog-centered">
-                                    <div className="modal-content border border-light">
-                                        <div className="modal-header">
+                                    <div className="modal-content border border-light" id="order-details-pdf">
+                                        <div className="modal-header text-light bg-dark">
                                             <h5 className="modal-title">Order Details</h5>
                                             <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
                                         </div>
-                                        <div className="modal-body" style={{ background: "transparent", color: "white" }}>
-                                            <p className=" "><strong>Order ID:</strong> {selectedOrder._id}</p>
-                                            <p className=" "><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                                        <div className="modal-body text-light bg-dark">
+                                            <p className="text-light"><strong>Order ID:</strong> {selectedOrder._id}</p>
+                                            <p className="text-light"><strong>Placed on:</strong> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+
+                                            <h6 className="mt-4 mb-2"><u>Shipping Address:</u></h6>
+                                            <p className="text-light">
+                                                {selectedOrder.shippingAddress.fullName}<br />
+                                                {selectedOrder.shippingAddress.addressLine}, {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state}<br />
+                                                {selectedOrder.shippingAddress.zipCode}, {selectedOrder.shippingAddress.country}<br />
+                                                Phone: {selectedOrder.shippingAddress.phone}
+                                            </p>
 
                                             <h6 className="mt-4 mb-2">Products:</h6>
-                                            <ul className="list-group" >
+                                            <ul className="list-group mb-3">
                                                 {selectedOrder.products.map(product => (
-                                                    <li key={product.productId._id} className="list-group-item d-flex justify-content-between align-items-center" style={{ background: "transparent", color: "white" }}>
-                                                        <div className="d-flex align-items-center" style={{ background: "transparent", color: "white" }}>
+                                                    <li key={product.productId._id} className="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white">
+                                                        <div className="d-flex align-items-center">
                                                             <img
                                                                 src={product.productId.images?.[0] || "/fallback.png"}
                                                                 alt={product.productId.name}
                                                                 style={{ width: "50px", height: "50px", objectFit: "cover" }}
                                                                 className="rounded me-2"
                                                             />
-                                                            <div style={{ background: "transparent", color: "white" }}>
-                                                                <div><strong>{product.productId.name}</strong></div>
-                                                                <div className="small text-light">Qty: {product.quantity}</div>
+                                                            <div>
+                                                                <strong>{product.productId.name}</strong><br />
+                                                                Qty: {product.quantity} | Size: {product.size} | Color: {product.color}
                                                             </div>
                                                         </div>
                                                         <span>₹{product.price?.toFixed(2) || "N/A"}</span>
@@ -583,32 +610,48 @@ const Profile = () => {
                                                 ))}
                                             </ul>
 
-                                            <h6 className="mt-4 mb-2">Summary:</h6>
-                                            <ul className="list-group" >
-                                                <li className="list-group-item d-flex justify-content-between" style={{ background: "transparent", color: "white" }}>
+                                            <h6 className="mb-2">Summary:</h6>
+                                            <ul className="list-group">
+                                                <li className="list-group-item d-flex justify-content-between bg-transparent text-white">
                                                     <span>Subtotal</span>
-                                                    <span>₹{selectedOrder.totalAmount.toFixed(2)}</span>
+                                                    <span>₹{(selectedOrder.totalAmount - selectedOrder.deliveryCharge).toFixed(2)}</span>
                                                 </li>
-                                                <li className="list-group-item d-flex justify-content-between" style={{ background: "transparent", color: "white" }}>
-                                                    <span>Status</span>
-                                                    <span className={`badge ${selectedOrder.status === 'Delivered'
+                                                <li className="list-group-item d-flex justify-content-between bg-transparent text-white">
+                                                    <span>Delivery Charge</span>
+                                                    <span>₹{selectedOrder.deliveryCharge.toFixed(2)}</span>
+                                                </li>
+                                                <li className="list-group-item d-flex justify-content-between bg-transparent text-white">
+                                                    <strong>Total</strong>
+                                                    <strong>₹{selectedOrder.totalAmount.toFixed(2)}</strong>
+                                                </li>
+                                                <li className="list-group-item d-flex justify-content-between bg-transparent text-white">
+                                                    <span>Payment Method</span>
+                                                    <span>{selectedOrder.paymentMethod}</span>
+                                                </li>
+                                                <li className="list-group-item d-flex justify-content-between bg-transparent text-white">
+                                                    <span>Payment Status</span>
+                                                    <span className={`badge ${selectedOrder.paymentStatus === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}`}>
+                                                        {selectedOrder.paymentStatus}
+                                                    </span>
+                                                </li>
+                                                <li className="list-group-item d-flex justify-content-between bg-transparent text-white">
+                                                    <span>Order Status</span>
+                                                    <span className={`badge ${selectedOrder.orderStatus === 'Delivered'
                                                         ? 'bg-success'
-                                                        : selectedOrder.status === 'Cancelled'
+                                                        : selectedOrder.orderStatus === 'Cancelled'
                                                             ? 'bg-danger'
-                                                            : selectedOrder.status === 'Processing'
+                                                            : selectedOrder.orderStatus === 'Processing'
                                                                 ? 'bg-warning text-dark'
                                                                 : 'bg-info'
                                                         }`}>
-                                                        {selectedOrder.status}
+                                                        {selectedOrder.orderStatus}
                                                     </span>
                                                 </li>
                                             </ul>
-
                                         </div>
-                                        <div className="modal-footer">
-                                            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
-                                                print
-                                            </button>
+                                        <div className="modal-footer text-light bg-dark">
+                                            <button className="btn btn-primary" onClick={handleDownloadPDF}>Download as PDF</button>
+                                            <button className="btn btn-secondary" onClick={handleCloseModal}>Close</button>
                                         </div>
                                     </div>
                                 </div>
@@ -617,13 +660,14 @@ const Profile = () => {
 
 
 
+
                         {step === 2 && (
-                            <form className="p-4 border rounded shadow-sm bg-transparent text-white">
+                            <form className="p-4 border rounded shadow-sm">
                                 <div className="d-flex justify-content-between mb-3">
-                                    <h4 className="text-white">Profile Information</h4>
+                                    <h4 className="text-dark">Profile Information</h4>
                                     <button
                                         type="button"
-                                        className={`btn btn-sm ${isEditing ? "btn-light" : "btn-outline-light"}`}
+                                        className={`btn btn-sm ${isEditing ? "btn-dark" : "btn-outline-dark"}`}
                                         onClick={isEditing ? handleUpdate : () => setIsEditing(true)}
                                     >
                                         {isEditing ? "Save" : "Edit"}
@@ -634,10 +678,10 @@ const Profile = () => {
 
                                 <div className="row mb-3">
                                     <div className="col-md-6">
-                                        <label className="form-label text-white">First Name</label>
+                                        <label className="form-label">First Name</label>
                                         <input
                                             type="text"
-                                            className="form-control bg-transparent text-white border-white"
+                                            className="form-control"
                                             name="firstName"
                                             value={formData.firstName}
                                             onChange={handleChange}
@@ -645,10 +689,10 @@ const Profile = () => {
                                         />
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label text-white">Last Name</label>
+                                        <label className="form-label">Last Name</label>
                                         <input
                                             type="text"
-                                            className="form-control bg-transparent text-white border-white"
+                                            className="form-control"
                                             name="lastName"
                                             value={formData.lastName}
                                             onChange={handleChange}
@@ -658,9 +702,9 @@ const Profile = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label className="form-label text-white">Gender</label>
+                                    <label className="form-label">Gender</label>
                                     <select
-                                        className="form-select bg-transparent text-white border-white"
+                                        className="form-select"
                                         name="gender"
                                         value={formData.gender}
                                         onChange={handleChange}
@@ -673,10 +717,10 @@ const Profile = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label className="form-label text-white">Email</label>
+                                    <label className="form-label">Email</label>
                                     <input
                                         type="email"
-                                        className="form-control bg-transparent text-white border-white"
+                                        className="form-control"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
@@ -685,10 +729,10 @@ const Profile = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <label className="form-label text-white">Mobile</label>
+                                    <label className="form-label">Mobile</label>
                                     <input
                                         type="tel"
-                                        className="form-control bg-transparent text-white border-white"
+                                        className="form-control"
                                         name="mobile"
                                         value={formData.mobile}
                                         onChange={handleChange}
@@ -724,7 +768,7 @@ const Profile = () => {
                                 )) : <p>No saved addresses.</p>}
 
 
-                                <button className="btn btn-outline-light mt-2" onClick={() => setShowAddressForm(true)}>Add New Address</button>
+                                <button className="btn btn-outline-dark mt-2" onClick={() => setShowAddressForm(true)}>Add New Address</button>
 
                                 {showAddressForm && (
                                     <form className="row g-3 mt-4" onSubmit={handleSaveAddress}>
@@ -809,7 +853,7 @@ const Profile = () => {
                                                 <div
                                                     key={product._id || `wishlist-${index}`}
                                                     className="position-relative border mb-3 shadow-sm p-2 rounded"
-                                                    style={{ background: "transparent", color: "white" }}
+
                                                 >
                                                     <div className="d-flex flex-column flex-sm-row align-items-start">
                                                         {/* Product Image */}
@@ -826,7 +870,7 @@ const Profile = () => {
                                                             <h3 className="fw-bold fs-5 mb-1 text-truncate">{product.name}</h3>
                                                             <span className="fw-semibold text-secondary">₹{product.price}</span>
                                                         </div>
-
+                                                        
                                                         {/* Remove Button */}
                                                         <button
                                                             onClick={() => handleRemove(product._id)}
@@ -849,13 +893,13 @@ const Profile = () => {
                         )}
 
                         {step === 5 && (
-                            <div className="row text-white">
+                            <div className="row text-dark">
                                 <div className="col-md-12">
                                     <h2 className="text-center">My Cart</h2>
-                                    <div className="card mb-4 border-light bg-transparent">
+                                    <div className="card mb-4 border-dark">
                                         <div className="card-body table-responsive">
-                                            <table className="table table-bordered align-middle text-center text-white">
-                                                <thead style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)" }}>
+                                            <table className="table table-bordered align-middle text-center text-dark">
+                                                <thead>
                                                     <tr>
                                                         <th>Image</th>
                                                         <th>Product</th>
@@ -867,7 +911,7 @@ const Profile = () => {
                                                 <tbody>
                                                     {cartData.cartItems.map((item) => (
                                                         <tr key={item.product._id}>
-                                                            <td style={{ background: "transparent", color: "white" }}>
+                                                            <td>
                                                                 <img
                                                                     src={item.product.images?.[0] || "/fallback.png"}
                                                                     alt={item.product.name}
@@ -875,20 +919,20 @@ const Profile = () => {
                                                                     style={{ maxHeight: "80px" }}
                                                                 />
                                                             </td>
-                                                            <td className="text-start" style={{ background: "transparent", color: "white" }}>
-                                                                <h6 className="text-white mb-1">{item.product.name}</h6>
-                                                                <small className="text-light">
+                                                            <td className="text-start">
+                                                                <h6 className="text-dark mb-1">{item.product.name}</h6>
+                                                                <small className="text-dark">
                                                                     {item.color && `Color: ${item.color}`}
                                                                     {item.size && ` | Size: ${item.size}`}
                                                                 </small>
-                                                                <div className="fw-bold mt-1 text-white">
+                                                                <div className="fw-bold mt-1 text-dark">
                                                                     ₹{item.product.price.toFixed(2)}
                                                                 </div>
                                                             </td>
-                                                            <td style={{ background: "transparent", color: "white" }}>
+                                                            <td>
                                                                 <div className="d-flex justify-content-center align-items-center">
                                                                     <button
-                                                                        className="btn btn-outline-light btn-sm"
+                                                                        className="btn btn-outline-dark btn-sm"
                                                                         onClick={() => updateQuantity(item.product._id, "decrement")}
                                                                         disabled={cartData.loading}
                                                                     >
@@ -896,7 +940,7 @@ const Profile = () => {
                                                                     </button>
                                                                     <span className="mx-3">{item.quantity}</span>
                                                                     <button
-                                                                        className="btn btn-outline-light btn-sm"
+                                                                        className="btn btn-outline-dark btn-sm"
                                                                         onClick={() => updateQuantity(item.product._id, "increment")}
                                                                         disabled={cartData.loading}
                                                                     >
@@ -904,17 +948,17 @@ const Profile = () => {
                                                                     </button>
                                                                 </div>
                                                             </td>
-                                                            <td className="fw-semibold text-white" style={{ background: "transparent", color: "white" }}>
+                                                            <td className="fw-semibold text-dark" >
                                                                 ₹{(item.product.price * item.quantity).toFixed(2)}
                                                             </td>
-                                                            <td style={{ background: "transparent", color: "white" }}>
+                                                            <td>
                                                                 <button
-                                                                    className="btn btn-sm btn-outline-danger"
+                                                                    className="btn btn-sm btn-outline-light"
                                                                     onClick={() => removeItem(item.product._id)}
                                                                     disabled={cartData.loading}
                                                                     title="Remove Item"
                                                                 >
-                                                                    <i className="fa-solid fa-trash text-white"></i>
+                                                                    <i className="fa-solid fa-trash text-danger"></i>
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -926,10 +970,10 @@ const Profile = () => {
                                 </div>
 
                                 <div className="col-12 col-sm-6 col-md-6">
-                                    <div className="card bg-transparent border-light text-white">
+                                    <div className="card bg-transparent border-dark text-dark">
                                         <div className="card-body">
                                             <h5 className="card-title">Order Summary</h5>
-                                            <hr className="border-light" />
+                                            <hr className="border-dark" />
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span>Subtotal ({cartData.totalItems} items)</span>
                                                 <span>₹{cartData.subTotal.toFixed(2)}</span>
@@ -938,13 +982,13 @@ const Profile = () => {
                                                 <span>Delivery Charge</span>
                                                 <span>₹{cartData.deliveryCharge.toFixed(2)}</span>
                                             </div>
-                                            <hr className="border-light" />
+                                            <hr className="border-dark" />
                                             <div className="d-flex justify-content-between fw-bold mb-4">
                                                 <span>Total Amount</span>
                                                 <span>₹{cartData.finalAmount.toFixed(2)}</span>
                                             </div>
                                             <button
-                                                className="btn btn-outline-light w-100"
+                                                className="btn btn-outline-dark w-100"
                                                 onClick={proceedToCheckout}
                                                 disabled={cartData.loading || cartData.cartItems.length === 0}
                                             >

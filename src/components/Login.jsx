@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { auth } from "../firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import logo from './asset/luna-logo.jpeg'
 
 const Login = () => {
     const [mobileNumber, setMobileNumber] = useState("");
@@ -190,8 +191,8 @@ const Login = () => {
             {showLogo && (
                 <div className="logo-animation-container">
                     <img
-                        src="https://dcassetcdn.com/design_img/2507971/637258/637258_13453039_2507971_014d29b7_image.png"
-                        className="logo-animation"
+                        src={logo}
+                        className="logo-animation rounded"
                         alt="Luna logo"
                     />
                 </div>
@@ -201,10 +202,10 @@ const Login = () => {
             <div className={`vh-100 w-100 d-flex justify-content-center align-items-center login-container ${showLogin ? 'login-visible' : ''}`}
                 style={{ background: "rgba(0, 0, 0, 0.6)" }}>
                 <div className="text-center p-4 rounded">
-                    <img src="https://dcassetcdn.com/design_img/2507971/637258/637258_13453039_2507971_014d29b7_image.png"
+                    <img src={logo}
                         style={{ height: "150px", width: "150px" }}
                         alt="Luna logo"
-                        className="mb-3" />
+                        className="mb-3 rounded" />
 
                     {step === 1 && (
                         <form onSubmit={handleSubmit}>
@@ -236,12 +237,12 @@ const Login = () => {
                         <form onSubmit={verifyOtp}>
                             <h2 className="fw-bold">Welcome Back !</h2>
                             <p className="text-white opacity-100">Please enter the OTP sent to {mobileNumber}. <span style={{cursor: "pointer", textDecoration: "underline"}} onClick={() => setStep(1)}>Change</span></p>
-                            {generatedOtp && (
+                            {/* {generatedOtp && (
                                 <div className="mb-3">
                                     <input type="text" className="form-control text-center otp" style={{ background: "transparent", color: "white" }} value={generatedOtp} readOnly />
                                     <button type="button" className="btn btn-secondary mt-2 continue" onClick={copyOtp}>Copy OTP</button>
                                 </div>
-                            )}
+                            )} */}
 
                             <label className="mt-3">Enter OTP</label><br /><br />
                             <div className="input-group mb-2">

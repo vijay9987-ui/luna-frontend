@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ProductDetails = ({
+const UserProductDetails = ({
     selectedItem,
     quantity,
     quantityDec,
@@ -33,40 +33,8 @@ const ProductDetails = ({
         setSuccess(null);
     }, [selectedItem]);
 
-    const addToCart = async () => {
-        // Validate required selections
-        if (selectedItem.sizes && !selectedSize) {
-            setError("Please select a size");
-            return;
-        }
-        if (selectedItem.colors && !selectedColor) {
-            setError("Please select a color");
-            return;
-        }
-
-        setIsLoading(true);
-        setError(null);
-        setSuccess(null);
-
-        try {
-            const response = await axios.post(
-                `https://luna-backend-1.onrender.com/api/users/addtocart/${userId}`,
-                {
-                    productId: selectedItem._id,
-                    action: "increment",
-                    color: selectedColor || undefined,
-                    size: selectedSize || undefined
-                    // Note: The quantity is handled by the API's increment/decrement actions
-                }
-            );
-
-            setSuccess("Product added to cart successfully!");
-        } catch (err) {
-            console.error("Error adding to cart:", err);
-            setError(err.response?.data?.message || "Failed to add product to cart");
-        } finally {
-            setIsLoading(false);
-        }
+    const addToCart =  () => {
+        navigate('/login');
     };
 
     const getContrastColor = (hexColor) => {
@@ -112,7 +80,7 @@ const ProductDetails = ({
     return (
         <div className="container my-4">
             <button
-                className="btn btn-outline-light mb-3"
+                className="btn btn-outline-dark mb-3"
                 onClick={goBack}
             >
                 ← Back to Products
@@ -325,7 +293,7 @@ const ProductDetails = ({
                             <div className="d-grid gap-2">
                                 <button
                                     className="btn btn-outline-dark"
-                                    onClick={() => navigate('/dashboard/my-cart')}
+                                    onClick={() => navigate('/')}
                                     disabled={
                                         isLoading ||
                                         (selectedItem.sizes && !selectedSize) ||
@@ -343,4 +311,4 @@ const ProductDetails = ({
     );
 };
 
-export default ProductDetails;
+export default UserProductDetails;

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../views/Navbar";
-import Footer from "../views/Footer";
+import UserNavbar from "./UserNavbar";
+import UserFooter from "./UserFooter";
+import UserProductDetails from "./UserProductDetails";
 import axios from "axios";
-import ProductDetails from "./productDetails";
 
-const Dashboard = () => {
+
+const Home = () => {
     const navigate = useNavigate();
 
     const images = [
@@ -16,7 +17,7 @@ const Dashboard = () => {
 
     const [categories, setCategories] = useState([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [recentlyViewedProducts, setRecentlyViewedProducts] = useState([]);
+    
     const [newArrivalsProducts, setNewArrivalsProducts] = useState([]);
     const [mostWantedProducts, setMostWantedProducts] = useState([]);
     const [step, setStep] = useState(1);
@@ -28,49 +29,6 @@ const Dashboard = () => {
     const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
     const userId = storedUser.userId;
 
-    // Fetch wishlist for the user
-    useEffect(() => {
-        const fetchWishlist = async () => {
-            if (!userId) return;
-            try {
-                const res = await fetch(`https://luna-backend-1.onrender.com/api/users/wishlist/${userId}`);
-                const data = await res.json();
-                if (data.wishlist) {
-                    setWishlist(data.wishlist.map(item => item._id));
-                }
-            } catch (error) {
-                console.error("Failed to fetch wishlist", error);
-            }
-        };
-        fetchWishlist();
-    }, [userId]);
-
-    // Toggle product in wishlist
-    const toggleWishlist = async (productId, e) => {
-        e.stopPropagation();
-        if (!userId) {
-            navigate('/');
-            return;
-        }
-        try {
-            const res = await fetch(`https://luna-backend-1.onrender.com/api/products/wishlist/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ productId }),
-            });
-            const data = await res.json();
-
-            setWishlist(prev =>
-                data.isInWishlist
-                    ? [...prev, productId]
-                    : prev.filter(id => id !== productId)
-            );
-        } catch (error) {
-            console.error("Error toggling wishlist", error);
-        }
-    };
 
     // Fetch products
     useEffect(() => {
@@ -91,35 +49,8 @@ const Dashboard = () => {
         fetchProducts();
     }, []);
 
-    useEffect(() => {
-        const fetchRecentlyViewed = async () => {
-            try {
-                const res = await axios.get(`https://luna-backend-1.onrender.com/api/products/recently-viewed/${userId}`);
-                setRecentlyViewedProducts(res.data.slice(0,10));
-            } catch (err) {
-                console.error("Failed to fetch recently viewed products", err);
-            }
-        };
 
-        if (userId)
-            fetchRecentlyViewed();
-    }, [userId]);
 
-    // Image slider effect
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentImageIndex(prev => (prev + 1) % images.length);
-        }, 3000);
-        return () => clearInterval(interval);
-    }, [images.length]);
-
-    // Check authentication
-    useEffect(() => {
-        const user = sessionStorage.getItem("user");
-        if (!user) {
-            navigate('/');
-        }
-    }, [navigate]);
 
     // Fetch categories
     useEffect(() => {
@@ -151,7 +82,7 @@ const Dashboard = () => {
 
     const handleCategoryClick = (categoryName) => {
         // No need to manually encode - React Router v6 handles this automatically
-        navigate(`/dashboard/category/${categoryName}`);
+        navigate(`/usercategory/${categoryName}`);
     };
 
     // Add to cart handler
@@ -210,7 +141,7 @@ const Dashboard = () => {
                             zIndex: 10,
                             cursor: "pointer",
                         }}
-                        onClick={(e) => toggleWishlist(product._id, e)}
+                        
                     >
                         <i
                             className={`fa-heart fa-2xl ${isInWishlist ? "fa-solid" : "fa-regular"}`}
@@ -239,7 +170,7 @@ const Dashboard = () => {
 
     return (
         <>
-            <Navbar />
+            <UserNavbar />
             <div className="container d-flex justify-content-center">
                 <div className="card text-bg-dark position-relative w-100">
                     <img
@@ -262,8 +193,8 @@ const Dashboard = () => {
                                 Level up Your Style With Our Summer Collections
                             </h1>
                             <br />
-                            <a href="/dashboard/new-arrivals" className="btn btn-light btn-lg">
-                                Shop Now
+                            <a href="/login" className="btn btn-light btn-lg">
+                                Login To Shop Now
                             </a>
                         </center>
                     </div>
@@ -272,26 +203,9 @@ const Dashboard = () => {
 
             <br />
 
+
             {step === 1 && (
                 <>
-                    {recentlyViewedProducts.length > 0 && (
-                        <div className="container mt-5">
-                            <div className="row align-items-center text-center text-md-start">
-                                <div className="col-12 col-md-4"></div>
-                                <div className="col-12 col-md-4 text-center">
-                                    <h2 style={{ color: "#000" }}>Recently viewed</h2>
-                                </div>
-                            </div>
-                            <br /><br />
-
-                            <div className="d-flex overflow-auto py-2 mx-5 custom-scroll" style={{ gap: "1rem", scrollSnapType: "x mandatory" }}>
-                                {recentlyViewedProducts.map(renderProductCard)}
-                            </div>
-                        </div>
-                    )}
-
-
-                    <br />
 
                     {/* Category Section */}
                     <div className="container">
@@ -382,11 +296,12 @@ const Dashboard = () => {
                     <div className="d-flex overflow-auto py-2 mx-5 custom-scroll" style={{ gap: "1rem", scrollSnapType: "x mandatory" }}>
                         {newArrivalsProducts.map(renderProductCard)}
                     </div>
+
                 </>
             )}
 
             {step === 2 && (
-                <ProductDetails
+                <UserProductDetails
                     selectedItem={selectedItem}
                     quantity={quantity}
                     quantityDec={quantityDec}
@@ -395,9 +310,11 @@ const Dashboard = () => {
                     goBack={() => setStep(1)}
                 />
             )}
-            <Footer />
+
+
+            <UserFooter />
         </>
     );
 }
 
-export default Dashboard;
+export default Home;

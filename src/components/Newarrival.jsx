@@ -193,7 +193,7 @@ const newArrival = () => {
                                         <button
                                             className="page-link"
                                             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                            style={{ background: "transparent", color: "white" }}
+                                            
                                         >
                                             Previous
                                         </button>
@@ -207,8 +207,8 @@ const newArrival = () => {
                                                 className="page-link"
                                                 onClick={() => setCurrentPage(num + 1)}
                                                 style={{
-                                                    background: currentPage === num + 1 ? "white" : "transparent",
-                                                    color: currentPage === num + 1 ? "black" : "white",
+                                                    background: currentPage === num + 1 ? "black" : "white",
+                                                    color: currentPage === num + 1 ? "white" : "black",
                                                     borderColor: "white"
                                                 }}
                                             >
@@ -221,7 +221,7 @@ const newArrival = () => {
                                         <button
                                             className="page-link"
                                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                            style={{ background: "transparent", color: "white" }}
+                                            
                                         >
                                             Next
                                         </button>

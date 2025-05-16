@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from "../views/Navbar";
-import Footer from '../views/Footer';
+import UserNavbar from "./UserNavbar";
+import UserFooter from './UserFooter';
 import axios from 'axios';
-import ProductDetails from './productDetails';
+import UserProductDetails from './UserProductDetails';
 
-const OnSaleProducts = () => {
+const UserOnsale = () => {
     const [step, setStep] = useState(1);
     const [quantity, setQuantity] = useState(1);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -26,40 +26,7 @@ const OnSaleProducts = () => {
     const currentProducts = mostWantedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
     const totalPages = Math.ceil(mostWantedProducts.length / productsPerPage);
 
-    useEffect(() => {
-        const fetchWishlist = async () => {
-            try {
-                const res = await fetch(`https://luna-backend-1.onrender.com/api/users/wishlist/${userId}`);
-                const data = await res.json();
-                setWishlist(data.wishlist.map(item => item._id));
-            } catch (error) {
-                console.error("Failed to fetch wishlist", error);
-            }
-        };
-        fetchWishlist();
-    }, [userId]);
-
-    const toggleWishlist = async (productId) => {
-        try {
-            const res = await fetch(`https://luna-backend-1.onrender.com/api/products/wishlist/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ productId }),
-            });
-            const data = await res.json();
-
-            if (data.isInWishlist) {
-                setWishlist((prev) => [...prev, productId]);
-            } else {
-                setWishlist((prev) => prev.filter(id => id !== productId));
-            }
-        } catch (error) {
-            console.error("Error toggling wishlist", error);
-        }
-    };
-
+    
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -96,7 +63,7 @@ const OnSaleProducts = () => {
 
     return (
         <>
-            <Navbar />
+            <UserNavbar />
             <div className="d-flex justify-content-center">
                 <div className="mostwanted">
                     <div className="wanted wanted-blur p-5 text-light align-items-center">
@@ -168,11 +135,7 @@ const OnSaleProducts = () => {
                                                     zIndex: 10,
                                                     cursor: "pointer",
                                                 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleWishlist(product._id);
-                                                }}
-                                            >
+                                              >
                                                 <i
                                                     className={`fa-heart fa-2xl ${isInWishlist ? "fa-solid" : "fa-regular"}`}
                                                     style={{
@@ -249,7 +212,7 @@ const OnSaleProducts = () => {
             )}
 
             {step === 2 && (
-                <ProductDetails
+                <UserProductDetails
                     selectedItem={selectedItem}
                     quantity={quantity}
                     quantityDec={quantityDec}
@@ -259,9 +222,9 @@ const OnSaleProducts = () => {
                 />
             )}
 
-            <Footer />
+            <UserFooter />
         </>
     );
 };
 
-export default OnSaleProducts;
+export default UserOnsale;

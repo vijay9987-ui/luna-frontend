@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import logo from  '../components/asset/luna-logo.jpeg'
 
-
-function Navbar() {
+function UserNavbar() {
   const navigate = useNavigate();
   
 
@@ -31,6 +31,7 @@ function Navbar() {
     <>
       <nav className="navbar navbar-expand-lg" style={{ borderBottom: "solid 1px white"}}>
         <div className="container-fluid">
+        {/* <img src={logo} style={{height: "100px", width: "100px"}} className="navbar-brand" /> */}
           <button
             className="navbar-toggler btn btn-light"
             type="button"
@@ -46,23 +47,23 @@ function Navbar() {
           <div className="collapse navbar-collapse" id="navbarText">
             <ul className="navbar-nav w-100 justify-content-center justify-content-lg-end gap-4 nav nav-underline">
               <li className="nav-item">
-                <Link className="nav-link mx-2" to="/dashboard">Home</Link>
+                <Link className="nav-link mx-2" to="/">Home</Link>
               </li>
               <li className="nav-item">
                 {/* {<Link className="nav-link mx-2" to="/dashboard/categorypage/:category">Category</Link>} */}
               </li>
               <li className="nav-item">
-                <Link className="nav-link mx-2" to="/dashboard/OnSaleProducts">On-Sale Products</Link>
+                <Link className="nav-link mx-2" to="/onsaleproducts">On-Sale Products</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link mx-2" to="/dashboard/new-arrivals">New Arrivals</Link>
+                <Link className="nav-link mx-2" to="/new-arrivals">New Arrivals</Link>
               </li>
               <li className="nav-item d-flex align-items-center">
                 <div className="position-relative">
                   <button
                     className="btn"
                     type="button"
-                    onClick={() => navigate('/dashboard/my-cart')}
+                    onClick={() => navigate('/login')}
                   >
                     <i className="fa-solid fa-cart-shopping fa-xl" style={{ color: "#000" }}></i>
                     {cartCount > 0 && (
@@ -77,7 +78,7 @@ function Navbar() {
                 </div>
               </li>
               <li className="nav-item d-flex align-items-center">
-                <button className="btn" type="button" onClick={() => navigate('/dashboard/Profile')}>
+                <button className="btn" type="button" onClick={() => navigate('/login')}>
                   <i className="fa-solid fa-user fa-xl" style={{ color: "#000" }}></i>
                 </button>
               </li>
@@ -91,4 +92,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export default UserNavbar;

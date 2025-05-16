@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../views/Navbar";
 import Footer from "../views/Footer";
-import ProductDetails from "../components/productDetails";
+import UserProductDetails from "./UserProductDetails";
 
 
 
@@ -25,52 +25,8 @@ const CategoryPage = () => {
     const [cart, setCart] = useState([]);
     const [wishlist, setWishlist] = useState([]);
 
-    const storedUser = JSON.parse(sessionStorage.getItem("user")) || {};
-    const userId = storedUser.userId;
-
-    // Fetch wishlist for the user
-    useEffect(() => {
-        const fetchWishlist = async () => {
-            if (!userId) return;
-            try {
-                const res = await fetch(`https://luna-backend-1.onrender.com/api/users/wishlist/${userId}`);
-                const data = await res.json();
-                if (data.wishlist) {
-                    setWishlist(data.wishlist.map(item => item._id));
-                }
-            } catch (error) {
-                console.error("Failed to fetch wishlist", error);
-            }
-        };
-        fetchWishlist();
-    }, [userId]);
-
-    // Toggle product in wishlist
-    const toggleWishlist = async (productId, e) => {
-        e.stopPropagation();
-        if (!userId) {
-            navigate('/');
-            return;
-        }
-        try {
-            const res = await fetch(`https://luna-backend-1.onrender.com/api/products/wishlist/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ productId }),
-            });
-            const data = await res.json();
-
-            setWishlist(prev =>
-                data.isInWishlist
-                    ? [...prev, productId]
-                    : prev.filter(id => id !== productId)
-            );
-        } catch (error) {
-            console.error("Error toggling wishlist", error);
-        }
-    };
+   
+   
 
     useEffect(() => {
         const fetchCategoryProducts = async () => {
@@ -191,7 +147,7 @@ const CategoryPage = () => {
                     e.currentTarget.style.transform = "scale(1)";
                     e.currentTarget.style.boxShadow = "none";
                 }}
-                onClick={() => handleProductClick(product)}
+               
             >
                 <div style={{ position: "relative" }}>
                     <img
@@ -208,7 +164,7 @@ const CategoryPage = () => {
                             zIndex: 10,
                             cursor: "pointer",
                         }}
-                        onClick={(e) => toggleWishlist(product._id, e)}
+                       
                     >
                         <i
                             className={`fa-heart fa-2xl ${isInWishlist ? "fa-solid" : "fa-regular"}`}
@@ -242,7 +198,7 @@ const CategoryPage = () => {
         return (
             <>
                 <Navbar />
-                <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh', color: 'black' }}>
+                <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh', color: 'dark' }}>
                     <div className="spinner-border" role="status">
                         <span className="visually-hidden">Loading...</span>
                     </div>
@@ -256,7 +212,7 @@ const CategoryPage = () => {
         return (
             <>
                 <Navbar />
-                <div className="container text-center py-5 text-dark">
+                <div className="container text-center py-5 text-light">
                     <h2>{error}</h2>
                     <button className="btn btn-outline-dark mt-3" onClick={() => navigate('/dashboard')}>
                         Back to Dashboard
@@ -270,13 +226,13 @@ const CategoryPage = () => {
     return (
         <>
             <Navbar />
-            <div className="container py-4 text-light">
+            <div className="container py-4 text-dark">
                 {step === 1 ? (
                     <>
                         {/* Toggle Button */}
                         <div className="d-flex justify-content-end mb-3">
                             <button
-                                className="btn btn-outline-light"
+                                className="btn btn-outline-dark"
                                 onClick={() => setShowFilters(prev => !prev)}
                             >
                                 {showFilters ? "Hide Filters" : "Show Filters"}
@@ -287,7 +243,7 @@ const CategoryPage = () => {
                             {/* Sidebar Filters */}
                             {showFilters && (
                                 <div className="col-12 col-md-4 col-lg-3 mb-4">
-                                    <div className="card bg-dark border-secondary p-3 h-100" style={{ color: "white" }}>
+                                    <div className="card bg-dark border-dark p-3 h-100" style={{ color: "white" }}>
                                         <h4 className="mb-3">Filters</h4>
 
                                         {/* Price Filter */}
@@ -374,7 +330,7 @@ const CategoryPage = () => {
                         </div>
                     </>
                 ) : (
-                    <ProductDetails
+                    <UserProductDetails
                         selectedItem={selectedItem}
                         quantity={quantity}
                         quantityDec={quantityDec}

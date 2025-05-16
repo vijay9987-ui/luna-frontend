@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import QRCode from 'react-qr-code';
 import Navbar from '../views/Navbar';
 import Footer from '../views/Footer';
 
@@ -13,6 +14,8 @@ const MyCart = () => {
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [selectedItems, setSelectedItems] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [orderDetails, setOrderDetails] = useState(null);
 
     const [address, setAddress] = useState({
         name: "",
@@ -37,13 +40,11 @@ const MyCart = () => {
         error: null
     });
 
-    // Get user ID from session storage
     const getUserId = () => {
         const savedUser = JSON.parse(sessionStorage.getItem("user")) || {};
         return savedUser.userId;
     };
 
-    // Fetch cart data
     const fetchCart = useCallback(async () => {
         try {
             const userId = getUserId();
@@ -74,7 +75,6 @@ const MyCart = () => {
         }
     }, []);
 
-    // Fetch addresses from backend
     const fetchAddresses = useCallback(async () => {
         const userId = getUserId();
         if (!userId) return;
@@ -88,13 +88,11 @@ const MyCart = () => {
         }
     }, []);
 
-    // Initial data loading
     useEffect(() => {
         fetchCart();
         fetchAddresses();
     }, [fetchCart, fetchAddresses]);
 
-    // Handle individual item selection
     const handleSelectItem = (productId) => {
         setSelectedItems(prev => {
             if (prev.includes(productId)) {
@@ -105,7 +103,6 @@ const MyCart = () => {
         });
     };
 
-    // Handle select all items
     const handleSelectAll = () => {
         if (selectAll) {
             setSelectedItems([]);
@@ -116,7 +113,6 @@ const MyCart = () => {
         setSelectAll(!selectAll);
     };
 
-    // Handle quantity change
     const updateQuantity = async (productId, action) => {
         try {
             const userId = getUserId();
@@ -138,7 +134,6 @@ const MyCart = () => {
         }
     };
 
-    // Handle item removal
     const removeItem = async (productId) => {
         try {
             const userId = getUserId();
@@ -159,7 +154,6 @@ const MyCart = () => {
         }
     };
 
-    // Handle removal of multiple items
     const removeSelectedItems = async () => {
         if (selectedItems.length === 0) {
             setError("Please select items to remove");
@@ -194,8 +188,15 @@ const MyCart = () => {
     const handleCheckout = async () => {
         setError(null);
 
-        if (cartData.cartItems.length === 0) {
-            setError("Your cart is empty");
+        // Check if there are any selected items
+        const itemsToCheckout = selectedItems.length > 0
+            ? cartData.cartItems.filter(item => selectedItems.includes(item.product._id))
+            : cartData.cartItems;
+
+        if (itemsToCheckout.length === 0) {
+            setError(selectedItems.length === 0
+                ? "Please select items to checkout"
+                : "Your cart is empty");
             return;
         }
 
@@ -205,15 +206,13 @@ const MyCart = () => {
         }
 
         try {
+            console.log("Starting checkout...");
+
             const userId = getUserId();
             if (!userId) {
                 setError("Please login to proceed with checkout");
                 return;
             }
-
-            const itemsToCheckout = selectedItems.length > 0
-                ? cartData.cartItems.filter(item => selectedItems.includes(item.product._id))
-                : cartData.cartItems;
 
             const products = itemsToCheckout.map(item => ({
                 productId: item.product._id,
@@ -246,6 +245,8 @@ const MyCart = () => {
 
             setCartData(prev => ({ ...prev, loading: true }));
 
+            console.log("Sending checkout data:", checkoutData);
+
             const response = await axios.post(
                 `https://luna-backend-1.onrender.com/api/users/create-order/${userId}`,
                 checkoutData,
@@ -256,13 +257,16 @@ const MyCart = () => {
                 }
             );
 
+            console.log("Received response:", response.data);
+
             if (!response.data) {
                 throw new Error("No data received from server");
             }
 
             if (response.data.order) {
+                setOrderDetails(response.data);
+                setShowPaymentModal(true);
                 await fetchCart();
-                alert('Order Placed Successfully');
             } else if (response.data.message) {
                 setError(response.data.message);
             } else {
@@ -270,26 +274,21 @@ const MyCart = () => {
             }
         } catch (err) {
             console.error("Checkout failed:", err);
-
-            if (err.response) {
-                setError(err.response.data.message || `Checkout failed (${err.response.status})`);
-            } else if (err.request) {
-                setError("Server is not responding. Please try again later.");
-            } else {
-                setError("Checkout failed. Please try again.");
-            }
+            setError(
+                err?.response?.data?.message ||
+                err?.message ||
+                "Checkout failed. Please try again."
+            );
         } finally {
             setCartData(prev => ({ ...prev, loading: false }));
         }
     };
 
-    // Handle address form changes
     const handleChangeAdd = (e) => {
         const { name, value } = e.target;
         setAddress(prev => ({ ...prev, [name]: value }));
     };
 
-    // Save new address
     const handleSaveAddress = async (e) => {
         e.preventDefault();
         const userId = getUserId();
@@ -309,7 +308,6 @@ const MyCart = () => {
         }
     };
 
-    // Delete address
     const handleDeleteAddress = async (addressId) => {
         const userId = getUserId();
         if (!userId) return;
@@ -326,12 +324,10 @@ const MyCart = () => {
         }
     };
 
-    // Select address for order
     const handleSelectAddress = (addr) => {
         setSelectedAddress(addr);
     };
 
-    // Calculate selected items subtotal
     const calculateSelectedSubtotal = () => {
         return cartData.cartItems
             .filter(item => selectedItems.includes(item.product._id))
@@ -342,16 +338,16 @@ const MyCart = () => {
     return (
         <>
             <Navbar />
-            <div className="container my-5" style={{ background: "transparent", color: "white" }}>
+            <div className="container my-5">
                 <h2 className="mb-4">My Cart ({cartData.totalItems} items)</h2>
 
                 {cartData.error && (
-                    <div className="alert alert-danger" style={{ background: "rgba(220, 53, 69, 0.2)", color: "white", borderColor: "rgba(220, 53, 69, 0.5)" }}>
+                    <div className="alert alert-danger">
                         {cartData.error}
                     </div>
                 )}
                 {error && (
-                    <div className="alert alert-danger" style={{ background: "rgba(220, 53, 69, 0.2)", color: "white", borderColor: "rgba(220, 53, 69, 0.5)" }}>
+                    <div className="alert alert-danger">
                         {error}
                     </div>
                 )}
@@ -362,7 +358,6 @@ const MyCart = () => {
                         <button
                             className="btn btn-primary mt-3"
                             onClick={() => navigate('/dashboard')}
-                            style={{ background: "rgba(13, 110, 253, 0.2)", color: "white", borderColor: "rgba(13, 110, 253, 0.5)" }}
                         >
                             Continue Shopping
                         </button>
@@ -371,10 +366,10 @@ const MyCart = () => {
                     <>
                         <div className="row">
                             <div className="col-md-12">
-                                <div className="card mb-4" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                                <div className="card mb-4">
                                     <div className="card-body table-responsive">
-                                        <table className="table table-bordered align-middle text-center" style={{ color: "white" }}>
-                                            <thead style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)" }}>
+                                        <table className="table table-bordered align-middle text-center">
+                                            <thead>
                                                 <tr>
                                                     <th>
                                                         <input
@@ -382,7 +377,6 @@ const MyCart = () => {
                                                             checked={selectAll}
                                                             onChange={handleSelectAll}
                                                             disabled={cartData.loading}
-                                                            style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                         />
                                                     </th>
                                                     <th>Image</th>
@@ -394,29 +388,28 @@ const MyCart = () => {
                                             </thead>
                                             <tbody>
                                                 {cartData.cartItems.map((item) => (
-                                                    <tr key={item.product._id} style={{ borderColor: "rgba(255, 255, 255, 0.1)", background: "transparent", color: "white" }}>
-                                                        <td style={{background: "transparent", color: "white"}}>
+                                                    <tr key={item.product._id}>
+                                                        <td>
                                                             <input
                                                                 type="checkbox"
                                                                 checked={selectedItems.includes(item.product._id)}
                                                                 onChange={() => handleSelectItem(item.product._id)}
                                                                 disabled={cartData.loading}
-                                                                style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                             />
                                                         </td>
 
-                                                        <td style={{background: "transparent", color: "white"}}>
+                                                        <td>
                                                             <img
                                                                 src={item.product.images?.[0] || "/fallback.png"}
                                                                 alt={item.product.name}
                                                                 className="img-fluid rounded border"
-                                                                style={{ maxHeight: "80px", borderColor: "rgba(255, 255, 255, 0.2)" }}
+                                                                style={{ maxHeight: "80px" }}
                                                             />
                                                         </td>
 
-                                                        <td className="text-start" style={{background: "transparent", color: "white"}}>
+                                                        <td className="text-start">
                                                             <h6 className="mb-1">{item.product.name}</h6>
-                                                            <small style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+                                                            <small className="text-muted">
                                                                 {item.color && `Color: ${item.color}`}
                                                                 {item.size && ` | Size: ${item.size}`}
                                                             </small>
@@ -425,39 +418,36 @@ const MyCart = () => {
                                                             </div>
                                                         </td>
 
-                                                        <td style={{background: "transparent", color: "white"}}>
+                                                        <td>
                                                             <div className="d-flex justify-content-center align-items-center">
                                                                 <button
-                                                                    className="btn btn-sm"
+                                                                    className="btn btn-sm btn-outline-secondary"
                                                                     onClick={() => updateQuantity(item.product._id, "decrement")}
                                                                     disabled={cartData.loading}
-                                                                    style={{ background: "transparent", color: "white", borderColor: "rgba(255, 255, 255, 0.5)" }}
                                                                 >
                                                                     -
                                                                 </button>
                                                                 <span className="mx-3">{item.quantity}</span>
                                                                 <button
-                                                                    className="btn btn-sm"
+                                                                    className="btn btn-sm btn-outline-secondary"
                                                                     onClick={() => updateQuantity(item.product._id, "increment")}
                                                                     disabled={cartData.loading}
-                                                                    style={{ background: "transparent", color: "white", borderColor: "rgba(255, 255, 255, 0.5)" }}
                                                                 >
                                                                     +
                                                                 </button>
                                                             </div>
                                                         </td>
 
-                                                        <td className="fw-semibold" style={{background: "transparent", color: "white"}}>
+                                                        <td className="fw-semibold">
                                                             ₹{(item.product.price * item.quantity).toFixed(2)}
                                                         </td>
 
-                                                        <td style={{background: "transparent", color: "white"}}>
+                                                        <td>
                                                             <button
                                                                 className="btn btn-outline-danger btn-sm"
                                                                 onClick={() => removeItem(item.product._id)}
                                                                 disabled={cartData.loading}
                                                                 title="Remove Item"
-                                                                // {style={{ background: "transparent", color: "#dc3545", borderColor: "rgba(220, 53, 69, 0.5)" }}}
                                                             >
                                                                 <i className="fa-solid fa-trash"></i>
                                                             </button>
@@ -477,7 +467,6 @@ const MyCart = () => {
                                                         className="btn btn-outline-danger"
                                                         onClick={removeSelectedItems}
                                                         disabled={cartData.loading}
-                                                        // {style={{ background: "transparent", color: "#dc3545", borderColor: "rgba(220, 53, 69, 0.5)" }}}
                                                     >
                                                         Remove Selected
                                                     </button>
@@ -495,8 +484,8 @@ const MyCart = () => {
                         <div className='container'>
                             <div className='row'>
                                 <div className="col-sm-6">
-                                    <div className="card mb-3" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
-                                        <div className="card-header" style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)", color: "white" }}>
+                                    <div className="card mb-3">
+                                        <div className="card-header">
                                             <h5 className="mb-0">Delivery Address</h5>
                                         </div>
                                         <div className="card-body">
@@ -507,12 +496,7 @@ const MyCart = () => {
                                                             key={addr._id}
                                                             className={`mb-3 p-3 border rounded ${selectedAddress?._id === addr._id ? "border-primary" : ""}`}
                                                             onClick={() => handleSelectAddress(addr)}
-                                                            style={{ 
-                                                                cursor: "pointer",
-                                                                background: "rgba(255, 255, 255, 0.03)",
-                                                                borderColor: selectedAddress?._id === addr._id ? "rgba(13, 110, 253, 0.5)" : "rgba(255, 255, 255, 0.1)",
-                                                                color: "white"
-                                                            }}
+                                                            style={{ cursor: "pointer" }}
                                                         >
                                                             <div className="form-check">
                                                                 <input
@@ -520,7 +504,6 @@ const MyCart = () => {
                                                                     className="form-check-input"
                                                                     checked={selectedAddress?._id === addr._id}
                                                                     onChange={() => { }}
-                                                                    style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                                 />
                                                                 <label className="form-check-label">
                                                                     <strong>{addr.name}</strong> ({addr.type})
@@ -539,16 +522,14 @@ const MyCart = () => {
                                                                         handleDeleteAddress(addr._id);
                                                                     }
                                                                 }}
-                                                                // {style={{ background: "transparent", color: "#dc3545", borderColor: "rgba(220, 53, 69, 0.5)" }}}
                                                             >
                                                                 Delete
                                                             </button>
                                                         </div>
                                                     ))}
                                                     <button
-                                                        className="btn w-100"
+                                                        className="btn btn-outline-dark w-100"
                                                         onClick={() => setShowAddressForm(true)}
-                                                        style={{ background: "transparent", color: "white", borderColor: "rgba(255, 255, 255, 0.5)" }}
                                                     >
                                                         + Add New Address
                                                     </button>
@@ -557,9 +538,8 @@ const MyCart = () => {
                                                 <div className="text-center">
                                                     <p>No saved addresses</p>
                                                     <button
-                                                        className="btn"
+                                                        className="btn btn-outline-dark"
                                                         onClick={() => setShowAddressForm(true)}
-                                                        style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                     >
                                                         Add Address
                                                     </button>
@@ -570,8 +550,8 @@ const MyCart = () => {
                                 </div>
 
                                 <div className="col-sm-6">
-                                    <div className="card mb-3" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
-                                        <div className="card-header" style={{ background: "rgba(255, 255, 255, 0.1)", borderColor: "rgba(255, 255, 255, 0.2)", color: "white" }}>
+                                    <div className="card mb-3">
+                                        <div className="card-header">
                                             <h5 className="mb-0">Payment Method</h5>
                                         </div>
                                         <div className="card-body">
@@ -580,33 +560,37 @@ const MyCart = () => {
                                                     className="form-select"
                                                     value={paymentMethod}
                                                     onChange={(e) => setPaymentMethod(e.target.value)}
-                                                    style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                 >
-                                                    <option value="COD" style={{ background: "#333", color: "white" }}>Cash on Delivery (COD)</option>
-                                                    <option value="Online" style={{ background: "#333", color: "white" }}>Online Payment (Credit/Debit Card, UPI, etc.)</option>
+                                                    <option value="COD">Cash on Delivery (COD)</option>
+                                                    <option value="UPI">UPI Payment</option>
+                                                    <option value="Online">Online Payment (Credit/Debit Card)</option>
                                                 </select>
                                             </div>
+                                            {paymentMethod === 'UPI' && (
+                                                <div className="alert alert-info mt-3">
+                                                    You will be shown a UPI QR code to complete payment after placing your order.
+                                                </div>
+                                            )}
                                             {paymentMethod === 'Online' && (
-                                                <div className="alert mt-3" style={{ background: "rgba(13, 202, 240, 0.1)", color: "white", borderColor: "rgba(13, 202, 240, 0.3)" }}>
+                                                <div className="alert alert-info mt-3">
                                                     You will be redirected to a secure payment gateway after placing your order.
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Order Summary Card */}
-                                    <div className="card" style={{ background: "rgba(255, 255, 255, 0.05)", borderColor: "rgba(255, 255, 255, 0.1)" }}>
-                                        <div className="card-body" style={{ color: "white" }}>
+                                    <div className="card">
+                                        <div className="card-body">
                                             <h5 className="card-title">Order Summary</h5>
-                                            <hr style={{ borderColor: "rgba(255, 255, 255, 0.1)" }} />
+                                            <hr />
 
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span>
                                                     Subtotal
                                                     {selectedItems.length > 0 ? (
-                                                        <span style={{ color: "rgba(255, 255, 255, 0.7)" }}> ({selectedItems.length} selected items)</span>
+                                                        <span className="text-muted"> ({selectedItems.length} selected items)</span>
                                                     ) : (
-                                                        <span style={{ color: "rgba(255, 255, 255, 0.7)" }}> ({cartData.totalItems} items)</span>
+                                                        <span className="text-muted"> ({cartData.totalItems} items)</span>
                                                     )}
                                                 </span>
                                                 <span>
@@ -621,7 +605,7 @@ const MyCart = () => {
                                                 <span>₹{cartData.deliveryCharge.toFixed(2)}</span>
                                             </div>
 
-                                            <hr style={{ borderColor: "rgba(255, 255, 255, 0.1)" }} />
+                                            <hr />
 
                                             <div className="d-flex justify-content-between fw-bold mb-4">
                                                 <span>Total Amount</span>
@@ -636,15 +620,9 @@ const MyCart = () => {
                                             </div>
 
                                             <button
-                                                className="btn w-100"
+                                                className="btn btn-dark w-100"
                                                 onClick={handleCheckout}
                                                 disabled={cartData.loading || selectedItems.length < 0}
-                                                style={{ 
-                                                    background: "rgba(255, 255, 255, 0.1)", 
-                                                    color: "white", 
-                                                    borderColor: "rgba(255, 255, 255, 0.3)",
-                                                    opacity: cartData.loading ? 0.7 : 1
-                                                }}
                                             >
                                                 {cartData.loading ? 'Processing...' : 'Proceed to Checkout'}
                                             </button>
@@ -653,18 +631,16 @@ const MyCart = () => {
                                 </div>
                             </div>
 
-                            {/* Address Form Modal */}
                             {showAddressForm && (
-                                <div className="modal" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.8)" }}>
+                                <div className="modal show fade d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                                     <div className="modal-dialog modal-lg">
-                                        <div className="modal-content" style={{ background: "rgba(40, 40, 40, 0.95)", color: "white" }}>
-                                            <div className="modal-header" style={{ borderColor: "rgba(255, 255, 255, 0.1)" }}>
+                                        <div className="modal-content bg-white text-dark">
+                                            <div className="modal-header">
                                                 <h5 className="modal-title">Add New Address</h5>
                                                 <button
                                                     type="button"
                                                     className="btn-close"
                                                     onClick={() => setShowAddressForm(false)}
-                                                    style={{ filter: "invert(1)" }}
                                                 ></button>
                                             </div>
                                             <div className="modal-body">
@@ -678,7 +654,6 @@ const MyCart = () => {
                                                             value={address.name}
                                                             onChange={handleChangeAdd}
                                                             required
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-6">
@@ -691,7 +666,6 @@ const MyCart = () => {
                                                             onChange={handleChangeAdd}
                                                             required
                                                             pattern="[0-9]{10}"
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-12">
@@ -703,7 +677,6 @@ const MyCart = () => {
                                                             value={address.email}
                                                             onChange={handleChangeAdd}
                                                             required
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
 
@@ -716,7 +689,6 @@ const MyCart = () => {
                                                             value={address.addressline1}
                                                             onChange={handleChangeAdd}
                                                             required
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-12">
@@ -727,7 +699,6 @@ const MyCart = () => {
                                                             className="form-control"
                                                             value={address.addressline2}
                                                             onChange={handleChangeAdd}
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
 
@@ -740,7 +711,6 @@ const MyCart = () => {
                                                             value={address.city}
                                                             onChange={handleChangeAdd}
                                                             required
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-4">
@@ -752,7 +722,6 @@ const MyCart = () => {
                                                             value={address.state}
                                                             onChange={handleChangeAdd}
                                                             required
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-4">
@@ -764,7 +733,6 @@ const MyCart = () => {
                                                             value={address.country}
                                                             onChange={handleChangeAdd}
                                                             required
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
                                                     <div className="col-md-6">
@@ -777,7 +745,6 @@ const MyCart = () => {
                                                             onChange={handleChangeAdd}
                                                             required
                                                             pattern="[0-9]{6}"
-                                                            style={{ background: "rgba(255, 255, 255, 0.1)", color: "white", borderColor: "rgba(255, 255, 255, 0.3)" }}
                                                         />
                                                     </div>
 
@@ -793,7 +760,6 @@ const MyCart = () => {
                                                                     checked={address.type === type}
                                                                     onChange={handleChangeAdd}
                                                                     id={`type-${type}`}
-                                                                    style={{ backgroundColor: "transparent", borderColor: "white" }}
                                                                 />
                                                                 <label className="form-check-label" htmlFor={`type-${type}`}>
                                                                     {type}
@@ -803,23 +769,99 @@ const MyCart = () => {
                                                     </div>
 
                                                     <div className="col-12 text-center mt-3">
-                                                        <button 
-                                                            type="submit" 
-                                                            className="btn me-2"
-                                                            style={{ background: "rgba(25, 135, 84, 0.2)", color: "white", borderColor: "rgba(25, 135, 84, 0.5)" }}
-                                                        >
+                                                        <button type="submit" className="btn btn-success me-2">
                                                             Save Address
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            className="btn"
+                                                            className="btn btn-danger"
                                                             onClick={() => setShowAddressForm(false)}
-                                                            style={{ background: "rgba(108, 117, 125, 0.2)", color: "white", borderColor: "rgba(108, 117, 125, 0.5)" }}
                                                         >
                                                             Cancel
                                                         </button>
                                                     </div>
                                                 </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Payment Modal */}
+                            {showPaymentModal && orderDetails && (
+                                <div className="modal" style={{ display: "block", background: "white", backgroundColor: "rgba(0,0,0,0.5)" }}>
+                                    <div className="modal-dialog modal-lg">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title">Complete Your Payment</h5>
+                                                <button
+                                                    type="button"
+                                                    className="btn-close"
+                                                    onClick={() => {
+                                                        setShowPaymentModal(false);
+                                                        navigate('/dashboard');
+                                                    }}
+                                                ></button>
+                                            </div>
+                                            <div className="modal-body">
+                                                {paymentMethod === 'UPI' ? (
+                                                    <div className="text-center">
+                                                        <h4>Scan the QR Code to Pay</h4>
+                                                        <p>UPI ID: juleeperween@ybl</p>
+                                                        <p>Amount: ₹{orderDetails.order.totalAmount.toFixed(2)}</p>
+
+                                                        <div className="my-4 d-flex justify-content-center">
+                                                            <div style={{ background: "white", padding: "20px", borderRadius: "10px" }}>
+                                                                <QRCode
+                                                                    value={`upi://pay?pa=juleeperween@ybl&am=${orderDetails.order.totalAmount}&cu=INR`}
+                                                                    size={200}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <p className="text-muted">After successful payment, your order will be processed</p>
+
+                                                        <div className="mt-4">
+                                                            <button
+                                                                className="btn btn-primary me-2"
+                                                                onClick={() => {
+                                                                    setShowPaymentModal(false);
+                                                                    navigate('/dashboard');
+                                                                }}
+                                                            >
+                                                                I've Completed Payment
+                                                            </button>
+                                                            <button
+                                                                className="btn btn-secondary"
+                                                                onClick={() => {
+                                                                    setShowPaymentModal(false);
+                                                                    navigate('/dashboard');
+                                                                }}
+                                                            >
+                                                                Cancel Order
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center">
+                                                        <h4>Order Placed Successfully!</h4>
+                                                        <p>Your order ID: {orderDetails.order._id}</p>
+                                                        <p>Total Amount: ₹{orderDetails.order.totalAmount.toFixed(2)}</p>
+                                                        <p>Payment Method: {orderDetails.order.paymentMethod}</p>
+
+                                                        <div className="mt-4">
+                                                            <button
+                                                                className="btn btn-primary"
+                                                                onClick={() => {
+                                                                    setShowPaymentModal(false);
+                                                                    navigate('/dashboard');
+                                                                }}
+                                                            >
+                                                                Continue Shopping
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
