@@ -18,6 +18,7 @@ import UserCategory from './home/UserCategory'
 import UserOnsale from "./home/UserOnsale";
 import UserNewArrivals from "./home/UserNewArrivals";
 import { ToastContainer } from 'react-toastify';
+import CompanyPoliciesPage from "./views/CompanyPoliciesPage";
 
 function App() {
     return (
@@ -47,6 +48,7 @@ function App() {
                     <Route path="/dashboard/category/:categoryName" element={<CategoryPage />} />
                     <Route path="/dashboard/my-cart" element={<Mycart />} />
                     <Route path="/dashboard/profile" element={<Profile />} />
+                    <Route path="/company-policies" element={<CompanyPoliciesPage />} />
 
 
                 </Route>

@@ -1,5 +1,6 @@
 import React from "react";
-import logo from '../components/asset/luna-logo.jpeg'
+import logo from '../components/asset/luna-logo.jpeg';
+import { Link } from 'react-router-dom';
 
 function Footer() {
   return (
@@ -39,17 +40,20 @@ function Footer() {
               {/* Company Section */}
               <div className="col-12 col-sm-4 mb-4">
                 <h4 className="fw-bold">Company</h4>
-                <p>About Us</p>
-                <p>Services</p>
-                <p>Support</p>
+                
+                <p><Link to="/company-policies#about-us" className="text-white text-decoration-none">About Us</Link></p>
+                <p><Link to="/company-policies#services" className="text-white text-decoration-none">Services</Link></p>
+                <p><Link to="/company-policies#support" className="text-white text-decoration-none">Support</Link></p>
+
               </div>
 
               {/* Policies Section */}
               <div className="col-12 col-sm-4 mb-4">
                 <h4 className="fw-bold">Our Policies</h4>
-                <p>Terms & Conditions</p>
-                <p>Privacy Policy</p>
-                <p>Copyright Matters</p>
+               
+                <p><Link to="/company-policies#terms" className="text-white text-decoration-none">Terms & Conditions</Link></p>
+                <p><Link to="/company-policies#privacy" className="text-white text-decoration-none">Privacy Policy</Link></p>
+                <p><Link to="/company-policies#copyright" className="text-white text-decoration-none">Copyright Matters</Link></p>
               </div>
             </div>
           </div>
